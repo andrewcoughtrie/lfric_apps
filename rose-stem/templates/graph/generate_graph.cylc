@@ -77,6 +77,11 @@
     {% endif %}
 {% endif %}
 
+{# Add task to export github scripts from SimSys_Scripts repo #}
+{# Runtime section in runtime/generate_runtime_scripts #}
+{% do graph_sections.append(["export_simsys_scripts"]) %}
+{% do tasks_to_run.update({"export_simsys_scripts": {} }) %}
+
 
 {# Set Housekeeping task if housekeeping is true - default value #}
 {# One housekeeping task per platform being run on #}
@@ -98,7 +103,11 @@
 {# Graph now defined as lists - convert this to the graph string #}
 {% set graph_str = namespace(str="") %}
 {% for line in graph_sections %}
-    {% set graph_str.str = graph_str.str~line[0]~"=>"~line[1]~"\n" %}
+    {% if line|length > 1 %}
+        {% set graph_str.str = graph_str.str~line[0]~"=>"~line[1]~"\n" %}
+    {% else %}
+        {% set graph_str.str = graph_str.str~line[0]~"\n" %}
+    {% endif %}
 {% endfor %}
         {# This line must be indented by 8 spaces #}
         R1 = """ {{graph_str.str}} """
