@@ -1214,8 +1214,9 @@ contains
     if ( chem_scheme == chem_scheme_offline_ox .or.       &
          chem_scheme == chem_scheme_strattrop  .or.       &
          chem_scheme == chem_scheme_strat_test ) then
-      checkpoint_flag = .true.
-      advection_flag  = .true.
+      ! Don't need advecting or checkpointing for dust only
+      checkpoint_flag = glomap_mode == glomap_mode_ukca
+      advection_flag  = glomap_mode == glomap_mode_ukca
       is_empty        = .false.
     end if
     ! H2O2 - advected under all schemes
@@ -1239,8 +1240,9 @@ contains
     if ( aerosol == aerosol_um .and.           &
          ( glomap_mode == glomap_mode_ukca .or.  &
            glomap_mode == glomap_mode_dust_and_clim ) ) then
-      checkpoint_flag = .true.
-      advection_flag = .true.
+      ! Don't need advecting or checkpointing for dust only
+      checkpoint_flag = glomap_mode == glomap_mode_ukca
+      advection_flag = glomap_mode == glomap_mode_ukca
       is_empty       = .false.
 
       ! Upper limit for H2O2 (ancillary field) only active for glomap_mode and
