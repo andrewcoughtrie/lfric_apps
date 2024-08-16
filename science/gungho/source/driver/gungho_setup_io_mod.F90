@@ -107,6 +107,7 @@ module gungho_setup_io_mod
                                        sst_source_start_dump,     &
                                        coarse_aerosol_ancil,      &
                                        coarse_orography_ancil,    &
+                                       coarse_ozone_ancil,        &
                                        snow_source,               &
                                        snow_source_surf
   use io_config_mod,             only: use_xios_io,               &
@@ -175,6 +176,7 @@ module gungho_setup_io_mod
 #ifdef UM_PHYSICS
     character(len=str_max_filename) :: aerosol_ancil_directory
     character(len=str_max_filename) :: orography_ancil_directory
+    character(len=str_max_filename) :: ozone_ancil_directory
 #endif
     integer(i_def)                  :: ts_start, ts_end
     integer(i_def)                  :: rc
@@ -406,7 +408,12 @@ module gungho_setup_io_mod
         end if
 
         ! Set ozone filename from namelist
-        write(ancil_fname,'(A)') trim(ancil_directory)//'/'// &
+        if ( coarse_ozone_ancil ) then
+          ozone_ancil_directory = coarse_ancil_directory
+        else
+          ozone_ancil_directory = ancil_directory
+        end if
+        write(ancil_fname,'(A)') trim(ozone_ancil_directory)//'/'// &
                                  trim(ozone_ancil_path)
         call files_list%insert_item( lfric_xios_file_type( ancil_fname,        &
                                                          xios_id="ozone_ancil", &

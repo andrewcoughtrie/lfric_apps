@@ -99,6 +99,7 @@ contains
     character( len=str_def )              :: prime_mesh_name
     character( len=str_def )              :: aerosol_mesh_name
     logical( kind=l_def )                 :: coarse_aerosol_ancil
+    logical( kind=l_def )                 :: coarse_ozone_ancil
 
     character(len=*), parameter :: io_context_name = "gungho_atm"
 
@@ -148,7 +149,9 @@ contains
     initialization_nml => modeldb%configuration%get_namelist('initialization')
     call initialization_nml%get_value( 'coarse_aerosol_ancil', &
                                        coarse_aerosol_ancil )
-    if (coarse_aerosol_ancil) then
+    call initialization_nml%get_value( 'coarse_ozone_ancil', &
+                                       coarse_ozone_ancil )
+    if (coarse_aerosol_ancil .or. coarse_ozone_ancil) then
       ! For now use the coarsest mesh
       multires_coupling_nml => &
         modeldb%configuration%get_namelist('multires_coupling')

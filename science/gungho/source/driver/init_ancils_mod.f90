@@ -372,7 +372,8 @@ contains
     call ozone_time_axis%initialise("ozone_time", file_id="ozone_ancil", &
                                     interp_flag=interp_flag, pop_freq="monthly")
     call setup_ancil_field("ozone", depository, ancil_fields, mesh, &
-                             twod_mesh, time_axis=ozone_time_axis)
+                           twod_mesh, time_axis=ozone_time_axis,    &
+                           alt_mesh=aerosol_mesh, alt_twod_mesh=aerosol_twod_mesh)
     call ancil_times_list%insert_item(ozone_time_axis)
 
     !=====  AEROSOL ANCILS =====

@@ -86,6 +86,7 @@ contains
     character( len=str_def )       :: prime_mesh_name
     character( len=str_def )       :: aerosol_mesh_name
     logical( kind=l_def )          :: coarse_aerosol_ancil
+    logical( kind=l_def )          :: coarse_ozone_ancil
     integer( kind=i_def )          :: init_option
     logical( kind=l_def )          :: nodal_output_on_w3
 
@@ -120,11 +121,13 @@ contains
     ! Get initialization configuration
     initialization_nml => modeldb%configuration%get_namelist('initialization')
     call initialization_nml%get_value( 'coarse_aerosol_ancil', &
-                                       coarse_aerosol_ancil )
+                                        coarse_aerosol_ancil )
+    call initialization_nml%get_value( 'coarse_ozone_ancil', &
+                                       coarse_ozone_ancil )
     call initialization_nml%get_value( 'init_option', init_option )
 
     ! If aerosol data is on a different mesh, get this
-    if (coarse_aerosol_ancil) then
+    if (coarse_aerosol_ancil .or. coarse_ozone_ancil) then
       ! For now use the coarsest mesh
       multires_coupling_nml => &
         modeldb%configuration%get_namelist('multires_coupling')

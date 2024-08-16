@@ -39,7 +39,8 @@ module gungho_driver_mod
                                          lbc_option_um2lfric_file, &
                                          ancil_option,             &
                                          ancil_option_updating,    &
-                                         coarse_aerosol_ancil
+                                         coarse_aerosol_ancil,     &
+                                         coarse_ozone_ancil
   use init_gungho_lbcs_alg_mod,   only : update_lbcs_file_alg
   use log_mod,                    only : log_event,           &
                                          log_level_always,    &
@@ -127,7 +128,7 @@ contains
     twod_mesh => mesh_collection%get_mesh(mesh, TWOD)
 
     ! If aerosol data is on a different mesh, get this
-    if (coarse_aerosol_ancil) then
+    if (coarse_aerosol_ancil .or. coarse_ozone_ancil) then
       ! For now use the coarsest mesh
       aerosol_mesh => mesh_collection%get_mesh(aerosol_mesh_name)
       aerosol_twod_mesh => mesh_collection%get_mesh(aerosol_mesh, TWOD)
