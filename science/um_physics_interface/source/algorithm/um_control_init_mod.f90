@@ -31,7 +31,7 @@ contains
 
     ! UM modules containing things that need setting
     use dynamics_input_mod, only: numcycles
-    use gen_phys_inputs_mod, only: l_mr_physics
+    use gen_phys_inputs_mod, only: l_mr_physics, l_vol_interp_rho
     use model_domain_mod, only: model_type, mt_lfric
     use nlsizes_namelist_mod, only: model_levels, cloud_levels, n_cca_lev, &
                                     tr_vars
@@ -64,6 +64,11 @@ contains
     ! Mixing ratio flag - contained in UM gen_phys_inputs.
     ! Set to true as LFRic only supports mixing ratios.
     l_mr_physics = .true.
+
+    ! This is only used in microphysics air density calculations
+    ! It should be false for consistency with how the dynamics maps
+    ! between meshes
+    l_vol_interp_rho = .false.
 
   end subroutine um_control_init
 
