@@ -84,21 +84,28 @@
 {% elif task.startswith("perftools") %}
 {# Perftools Tasks #}
 
+    {# We want to run in the same family as the previous task #}
+    {% set family_perftools = task_ns.application~"_"~
+                            task_ns.conf_name~"_"~
+                            task_ns.platform~"_"~
+                            task_ns.compiler~"_"~
+                            task_ns.extras %}
+
     {% set previous_job = "run_"~
-                          task_ns.application~"_"~
-                          task_ns.conf_name~"_"~
-                          task_ns.platform~"_"~
-                          task_ns.compiler~"_"~
-                          task_ns.extras %}
-    {# We want to inherrit this: <SITE>_RUN_PERFTOOLS-<COMPILER> #}
-    {% set family_perftools = task_ns.platform~"_run_"~
-                              task_ns.compiler %}
+                          family_perftools %}
+
+    {# Set the family inheritance for this task #}
+    {% set inherit = namespace(str="") %}
+    {% set inherit.str = family_perftools|upper%}
+    {% for family in task_values["run_families"] %}
+        {% set inherit.str = inherit.str~","~family|upper %}
+    {% endfor %}
 
     [[{{task}}]]
-        inherit={{family_perftools|upper}}
+        inherit={{inherit.str|upper}}
         script = rose task-run --app-key=perftools_export
         [[[environment]]]
-            PREVIOUS_WORKING_DIR=$SOURCE_ROOT/../../work/1/{{previous_job}}
+            PREVIOUS_JOB={{previous_job}}
             THE_APP_NAME={{task_ns.application}}
             APP_CONFIGURATION_OUTPUT={{task_ns.application}}_{{task_ns.conf_name}}
 

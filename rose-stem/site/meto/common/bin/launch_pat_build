@@ -4,6 +4,8 @@
 # The file LICENCE, distributed with this code, contains details of the terms
 # under which the code may be used.
 
+set -e
+
 EXEC_NAME="$1"
 
 echo "Running Pat build script" 
@@ -12,15 +14,22 @@ echo "Running Pat build script"
 EXEC_PATH="${BIN_DIR}/${EXEC_NAME}"
 echo "${EXEC_PATH}"
 
-#these will set these through a module
-#XC40
-PAT_LIBS=(-D link-instr="-L/opt/cray/alps/default/lib64" -D link-instr="-L/opt/cray/xpmem/0.1-2.0502.64982.5.3.ari/lib64" -Oapa)
-#EXZ
-#PAT_LIBS=(-D link-instr="-L/opt/cray/pe/pals/1.2.12/lib" -D link-instr="-L/opt/cray/xpmem/2.6.2-2.5_2.33__gd067c3f.shasta/lib64" -Oapa)
+#XC40 - these could be set by a module - intel only
+if [ "${LFRIC_TARGET_PLATFORM}" = "meto-xc40" ] ; then
+    PAT_LIBS=(-D link-instr="-L/opt/cray/alps/default/lib64" -D link-instr="-L/opt/cray/xpmem/0.1-2.0502.64982.5.3.ari/lib64" -Oapa)
+else
+    PAT_LIBS=
+fi
 
 #Make sure we are in the location, otherwise the exe we wll end up with the exe in the wrong place
 cd "${BIN_DIR}"
 rm -f "${EXEC_NAME}+pat"
 
-#we need to get the paths correct, therefore these need to be set correctly, which can probs be done in a module 
-pat_build "${PAT_LIBS[@]}" "${EXEC_NAME}"
+#build into exisiting exe with craypat
+#XC40
+if [ "${LFRIC_TARGET_PLATFORM}" = "meto-xc40" ] ; then
+    pat_build "${PAT_LIBS[@]}" "${EXEC_NAME}"
+#EXZ
+else
+    pat_build "${EXEC_NAME}"
+fi

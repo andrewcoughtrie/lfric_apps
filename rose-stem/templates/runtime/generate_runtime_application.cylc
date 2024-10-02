@@ -68,9 +68,9 @@
 
 {# Check to see if it is a Perftools application run, as we need to change the binary target#}
 {% set PAT_EXE_EXTEN ='' %}
-{% if SITE~"-"~task_ns.platform == 'meto-xc40' %}
+{% if SITE~"-"~task_ns.platform == 'meto-xc40' or SITE~"-"~task_ns.platform == 'meto-ex1a' %}
     {% if 'perftools' in task_ns.compiler %}
-        {%  set PAT_EXE_EXTEN ='+pat' %}
+        {% set PAT_EXE_EXTEN ='+pat' %}
     {% endif %}
 {% endif %}
 

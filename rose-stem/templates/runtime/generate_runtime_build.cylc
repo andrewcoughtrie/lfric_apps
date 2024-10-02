@@ -26,13 +26,10 @@
 {# Check to see if it is a Perftools compile, as we need to change the Makefile target#}
 {%- set BUILD_TARGET  = "build" -%}
 {%  set PAT_BUILD_APP = "" %}
-{# Meto site specific perftools#}
-{%- if SITE == 'meto'%}
-    {%- if SITE~"-"~task_ns.platform == 'meto-xc40' %}
-        {%- if 'perftools' in task_ns.compiler %}
-            {%- set BUILD_TARGET  = "pat_build" -%}
-            {%- set PAT_BUILD_APP = "$LAUNCH_SCRIPT/launch_pat_build" -%}
-        {%- endif %}
+{%- if SITE~"-"~task_ns.platform == 'meto-xc40' or SITE~"-"~task_ns.platform == 'meto-ex1a' %}
+    {%- if 'perftools' in task_ns.compiler %}
+        {%- set BUILD_TARGET  = "pat_build" -%}
+        {%- set PAT_BUILD_APP = "$LAUNCH_SCRIPT/launch_pat_build" -%}
     {%- endif %}
 {%- endif %}
 

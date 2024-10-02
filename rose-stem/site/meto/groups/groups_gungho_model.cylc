@@ -264,6 +264,12 @@
     "gungho_model_ex1a_weekly": [
         "gungho_model_baroclinic-C192_MG_ex1a_gnu_fast-debug-64bit",
     ],
+    "gungho_model_ex1a_perftools":[
+        "gungho_model_baroclinic-C192_MG_ex1a_perftools-gnu_fast-debug-64bit",
+        "gungho_model_baroclinic-noio-C192_MG_ex1a_perftools-gnu_fast-debug-64bit",
+        "gungho_model_baroclinic-noio-C24_MG_ex1a_perftools-gnu_fast-debug-64bit",
+        "gungho_model_baroclinic-C48_MG_ex1a_perftools-gnu_fast-debug-64bit",
+    ],
   }) %}
 
 {# Platform Generic Groups #}

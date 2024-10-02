@@ -28,7 +28,7 @@
 {% endif %}
 
 {# plot settings #}
-{% if "plot_str" in task_values %}
+{% if "plot_str" in task_values and task_values["plot_str"]|length > 0 %}
     {% set plot = true %}
 {% else %}
     {% set plot = false %}
@@ -139,6 +139,12 @@
 {% if task.startswith("run") and task_ns.application != "mesh" %}
     {% if "perftools" in task_ns.compiler %}
        {% set perftools = true %}
+       {% set app_perftools_export_task = "perftools-export_"~
+                                            task_ns.application~"_"~
+                                            task_ns.conf_name~"_"~
+                                            task_ns.platform~"_"~
+                                            task_ns.compiler~"_"~
+                                            task_ns.extras %}
     {% endif %}
 {% endif %}
 
@@ -225,12 +231,6 @@
     {% endif %}
 
     {% if perftools %}
-        {% set app_perftools_export_task = "perftools-export_"~
-                                            task_ns.application~"_"~
-                                            task_ns.conf_name~"_"~
-                                            task_ns.platform~"_"~
-                                            task_ns.compiler~"_"~
-                                            task_ns.extras %}
         {% if app_perftools_export_task not in tasks_to_run %}
             {% do tasks_to_run.update({app_perftools_export_task: task_values}) %}
         {% endif %}

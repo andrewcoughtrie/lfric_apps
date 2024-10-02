@@ -1,5 +1,10 @@
 #!/bin/bash
 
+set -e
+
+MYPWD=$(pwd)
+PREVIOUS_WORKING_DIR=$MYPWD"/../"$PREVIOUS_JOB
+
 RECENT_PAT_REPORT=$(ls -t ${PREVIOUS_WORKING_DIR} | grep -m 1 --line-buffered "+pat+")
 PAT_REPORT_TARGET=$PREVIOUS_WORKING_DIR"/"$RECENT_PAT_REPORT
 echo $PAT_REPORT_TARGET
@@ -54,10 +59,9 @@ if ($OUTPUT_TO_DATADIR); then
     echo "#####################################################################"
 
 else
-    PWD=$(pwd)
     echo "#####################################################################"
     echo $RECENT_PAT_REPORT" can be found "$PREVIOUS_WORKING_DIR
-    echo "and new exported reports"$PWD
+    echo "and new exported reports"$MYPWD
     echo "#####################################################################"
 fi
 

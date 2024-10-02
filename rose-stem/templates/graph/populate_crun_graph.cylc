@@ -69,6 +69,15 @@
             crun_task]) %}
     {% endif %}
 
+    {% if perftools %}
+        {% set crun_perftools_export = app_perftools_export_task~"-crun"~restart_no %}
+        {% if crun_perftools_export not in tasks_to_run %}
+            {% do tasks_to_run.update({crun_perftools_export: task_values}) %}
+        {% endif %}
+        {% do graph_sections.append([
+            crun_task,
+            crun_perftools_export]) %}
+    {% endif %}
 
     {# If we're on the final run #}
     {% if restart_no == crun-1 %}
