@@ -218,31 +218,68 @@
         "lfric_atm_cbl-BiP64x64-100x100_MG_xc40_intel_production-64bit-rbl32",
     ],
     }) %}
-{# EX1A groups #}
+
+
+{# ###################################################################### #}
+{# EX1A Test Groups #}
+{# ###################################################################### #}
 {% do site_groups.update({
-    "lfric_atm_ex1a_developer": [
-        "lfric_atm_nwp_gal9_debug-C12_ex1a_gnu_fast-debug-64bit",
-        "lfric_atm_ex1a_canned",
+    "lfric_atm_nwp_ex1a_developer": [
+        "lfric_atm_nwp_gal9_nomg-C12_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_nwp_gal9_nomg-C12_ex1a_cce_production-64bit-rbl32-rtran32",
+        "lfric_atm_nwp_gal9_molw-C12_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_nwp_gal9_debug-C12_ex1a_gnu_full-debug-64bit",
+        "lfric_atm_nwp_gal9_short-C12_ex1a_cce_fast-debug-64bit",
     ],
-    "lfric_atm_ex1a": [
-        "lfric_atm_ex1a_developer",
+    "lfric_atm_nwp_ex1a_extra": [
+        "lfric_atm_nwp_gal9_nomg-C12_ex1a_cce_fast-debug-64bit-rbl32-rtran32",
+        "lfric_atm_nwp_gal9-C48_MG_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_nwp_gal9_coarse_aero-C48_MG_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_nwp_gal9_da-C12_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_nwp_gal9_ls_and_jedi-C12_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_nwp_gal9_debug-C48_MG_ex1a_gnu_full-debug-64bit",
+        "lfric_atm_nwp_casim-C12_ex1a_cce_fast-debug-64bit",
     ],
-    "lfric_atm_ex1a_build": [
-        "build_lfric_atm_ex1a_gnu_fast-debug-64bit",
+    "lfric_atm_nwp_ex1a": [
+        "lfric_atm_nwp_ex1a_developer",
+        "lfric_atm_nwp_ex1a_extra",
     ],
-    "lfric_atm_ex1a_canned": [
-        "lfric_atm_canned_ex1a_gnu_fast-debug-64bit",
+    "lfric_atm_ral_ex1a_developer": [
+        "lfric_atm_ral3-seuk_MG_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_ral3_ens-seuk_MG_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_ral3_mixmol-seuk_MG_ex1a_cce_fast-debug-64bit",
     ],
-    "lfric_atm_ex1a_cce_tests": [
+    "lfric_atm_ral_ex1a": [
+        "lfric_atm_ral_ex1a_developer",
+    ],
+    "lfric_atm_scm_ex1a_developer": [
+        "lfric_atm_scm_gal9_bomex-BiP2x2-50000x50000_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_scm_gal9_cbl_dry-BiP2x2-50000x50000_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_scm_gal9_comp_tran_ref-BiP2x2-50000x50000_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_scm_gal9_dice2-BiP2x2-50000x50000_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_scm_gal9_gabls4-BiP2x2-50000x50000_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_scm_gal9_sahara-BiP2x2-50000x50000_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_scm_gal9_seaice-BiP2x2-50000x50000_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_scm_gal9_snow-BiP2x2-50000x50000_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_scm_gal9_toga-BiP2x2-50000x50000_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_scm_llcs-BiP2x2-50000x50000_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_scm_rad_gas-BiP2x2-50000x50000_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_scm_ral3_constrain-BiP2x2-50000x50000_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_scm_ral3_moruses-BiP2x2-50000x50000_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_scm_ral3_urban2t-BiP2x2-50000x50000_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_scm_ukca_land-BiP2x2-50000x50000_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_scm_ukca_sea-BiP2x2-50000x50000_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_canned_ex1a_cce_fast-debug-64bit",
+    ],
+    "lfric_atm_ex1a_full_debug": [
         "lfric_atm_nwp_gal9_debug-C12_ex1a_cce_full-debug-64bit",
-        "lfric_atm_nwp_gal9_debug-C12_ex1a_cce_fast-debug-64bit",
         "lfric_atm_scm_gal9_bomex-BiP2x2-50000x50000_ex1a_cce_full-debug-64bit",
         "lfric_atm_scm_gal9_cbl_dry-BiP2x2-50000x50000_ex1a_cce_full-debug-64bit",
         "lfric_atm_scm_gal9_comp_tran_ref-BiP2x2-50000x50000_ex1a_cce_full-debug-64bit",
         "lfric_atm_scm_gal9_dice2-BiP2x2-50000x50000_ex1a_cce_full-debug-64bit",
         "lfric_atm_scm_gal9_gabls4-BiP2x2-50000x50000_ex1a_cce_full-debug-64bit",
-        "lfric_atm_scm_gal9_sahara-BiP2x2-50000x50000_ex1a_cce_full-debug-64bit",
-        "lfric_atm_scm_gal9_seaice-BiP2x2-50000x50000_ex1a_cce_full-debug-64bit",
+        "lfric_atm_scm_gal9_sahara-BiP2x2-50000x50000_ex1a_gnu_full-debug-64bit",
+        "lfric_atm_scm_gal9_seaice-BiP2x2-50000x50000_ex1a_gnu_fast-debug-64bit",
         "lfric_atm_scm_gal9_snow-BiP2x2-50000x50000_ex1a_cce_full-debug-64bit",
         "lfric_atm_scm_gal9_toga-BiP2x2-50000x50000_ex1a_cce_full-debug-64bit",
         "lfric_atm_scm_llcs-BiP2x2-50000x50000_ex1a_cce_full-debug-64bit",
@@ -253,10 +290,31 @@
         "lfric_atm_scm_ukca_land-BiP2x2-50000x50000_ex1a_cce_full-debug-64bit",
         "lfric_atm_scm_ukca_sea-BiP2x2-50000x50000_ex1a_cce_full-debug-64bit",
     ],
-    "lfric_atm_ex1a_weekly": [
-        "lfric_atm_nwp_gal9-C192_MG_ex1a_gnu_fast-debug-64bit-rbl32",
+    "lfric_atm_ex1a_developer": [
+        "lfric_atm_nwp_ex1a_developer",
+        "lfric_atm_ex1a_full_debug",
+        "lfric_atm_clim_gal9_nomg-C12_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_ral_ex1a_developer",
+        "lfric_atm_rce_test-BiP64x64-1500x1500_MG_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_scm_ex1a_developer",
     ],
-  }) %}
+    "lfric_atm_ex1a_extra": [
+        "lfric_atm_nwp_ex1a_extra",
+        "lfric_atm_clim_gal9_chem-C12_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_aquaplanet-C12_ex1a_cce_fast-debug-64bit",
+        "lfric_atm_thai_ben1-C48_MG_ex1a_cce_fast-debug-64bit",
+    ],
+    "lfric_atm_ex1a": [
+        "lfric_atm_ex1a_developer",
+        "lfric_atm_ex1a_extra",
+    ],
+    "lfric_atm_ex1a_build": [
+        "build_lfric_atm_ex1a_cce_fast-debug-64bit",
+        "build_lfric_atm_ex1a_gnu_fast-debug-64bit",
+        "build_lfric_atm_ex1a_gnu_full-debug-64bit",
+    ],
+    }) %}
+
 
 {# ###################################################################### #}
 {# Platform Generic Groups #}
@@ -309,6 +367,5 @@
 {% do site_groups.ex1a_developer.extend(site_groups.lfric_atm_ex1a_developer) %}
 {% do site_groups.ex1a.extend(site_groups.lfric_atm_ex1a) %}
 {% do site_groups.ex1a_build.extend(site_groups.lfric_atm_ex1a_build) %}
-{% do site_groups.ex1a_cce.extend(site_groups.lfric_atm_ex1a_cce_tests) %}
 
 {% do LOG.debug("Finished in site/meto/groups/groups_lfric_atm.cylc") %}

@@ -48,7 +48,7 @@
 {% if task_dict %}
     {% if "full-debug" in task %}
         {% do task_dict.update({
-            "tsteps": 4,
+            "tsteps": 6,
             "crun": 1,
             "kgo_checks": [],
             "plot_str": "",
