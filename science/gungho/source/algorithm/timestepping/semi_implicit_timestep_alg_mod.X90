@@ -581,7 +581,7 @@ contains
 
     implicit none
 
-    type(semi_implicit_timestep_type), intent(inout) :: self
+    type(semi_implicit_timestep_type), intent(inout), target :: self
     type(modeldb_type), intent(in), target  :: modeldb
 
     ! Prognostic fields
@@ -625,6 +625,8 @@ contains
     type( field_type ),       pointer :: moist_dyn_ref(:)
     type( field_array_type ), pointer :: moist_dyn_ref_array
 
+    ! Moisture field to transport
+    type( field_type ),       pointer :: mr_to_adv(:)
 
     real(kind=r_def) :: cast_dt
 
@@ -758,6 +760,8 @@ contains
                   dlayer_rhs=.false., model_clock=model_clock )
 
     call copy_bundle(self%state_after_slow, self%advected_state,  bundle_size)
+    ! Set the moisture to be transported to point to the moisture after slow physics
+    mr_to_adv => self%mr_after_slow
     ! Set predictors for transport
     call predictors_alg(self%advected_state, self%state_n(igh_u), &
                         self%rhs_n(igh_u),varbeta,model_clock)
@@ -784,7 +788,7 @@ contains
       if (use_wavedynamics) then
         call gungho_transport_control_alg( self%rhs_adv, self%advected_state,      &
                                            self%state(igh_u), self%state_n(igh_u), &
-                                           mr, self%mr_after_slow, model_clock,    &
+                                           mr, mr_to_adv, model_clock,             &
                                            outer, cheap_update,                    &
                                            self%adv_inc_prev, self%wind_prev,      &
                                            self%state_after_slow(igh_d),           &
@@ -802,7 +806,8 @@ contains
           ! Copy transport increments to use in next outer iteration
           ! for the cheap transport update
           call copy_bundle(self%rhs_adv, self%adv_inc_prev, bundle_size)
-          ! Update advected state, moisture, and tracers
+          ! Update advected state, moisture, and tracers to be transported
+          ! in the next outer iteration transport call
           call mass_matrix_solver_alg( self%wind_fv_inc, self%rhs_adv(igh_u) )
           call invoke( inc_X_plus_Y(self%advected_state(igh_d), self%rhs_adv(igh_d) ), &
                        inc_X_plus_Y(self%advected_state(igh_t), self%rhs_adv(igh_t) ), &
@@ -814,7 +819,10 @@ contains
                       generic_fields_to_copy=con_tracer_all_outer,          &
                       field_list=con_tracer_all_outer)
           if (self%use_moisture) then
-            call copy_bundle(mr, self%mr_after_slow, nummr)
+            ! Update the moisture to be transported in the next outer iteration
+            ! by setting mr_to_adv to point to the moisture after the previous
+            ! transport, mr_after_adv (which is set later in the outer loop)
+            mr_to_adv => self%mr_after_adv
           end if
           ! Store latest estimate of the wind for cheap transport update
           call invoke( setval_X(self%wind_prev, self%state(igh_u)) )
@@ -835,6 +843,9 @@ contains
         if (self%use_moisture) call copy_bundle(self%mr_after_slow, mr, nummr)
       end if
 
+      ! Update the moisture after transport (mr_after_adv)
+      if (self%use_moisture) call copy_bundle(mr, self%mr_after_adv, nummr)
+
       if (use_physics) then
         !--------------------------------------------------------------------
         ! setting predictors for fast physics
@@ -847,7 +858,6 @@ contains
                                          self%rhs_n, self%state, self%state_after_slow, &
                                          lbc_fields, model_clock )
         end if
-        if (self%use_moisture) call copy_bundle(mr, self%mr_after_adv, nummr)
         ! cloud fields are stored in the advective tracers
         call conditional_collection_copy(cloud_fields_after_adv,               &
                   generic_fields_to_copy=cloud_fields,                         &
