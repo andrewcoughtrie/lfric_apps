@@ -199,7 +199,7 @@ contains
     ! |X X 0 0 0
     ! |X X 0 0 0
     !
-    threshold = rim_width - depth - epsilon(1.0_r_def)
+    threshold = rim_width - depth + epsilon(1.0_r_def)
 
     call invoke( splice_fields_kernel_type( lam_field, fill_field, onion_layers, threshold ) )
 
@@ -252,7 +252,7 @@ contains
     ! |X X 0 0 0
     ! |X X 0 0 0
     !
-    threshold = rim_width - depth - epsilon(1.0_r_def)
+    threshold = rim_width - depth + epsilon(1.0_r_def)
 
     call invoke( splice_fields_kernel_type( lam_field_r_tran, fill_field_r_tran, &
                                             onion_layers, threshold ) )
