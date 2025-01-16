@@ -63,13 +63,15 @@ build: export PROGRAMS    := $(basename $(notdir $(shell find source -maxdepth 1
 build: export PROJECT      = lfric_atm
 build: export SCRATCH_DIR := $(WORKING_DIR)/../um-scratch
 build: export WORKING_DIR := $(WORKING_DIR)
+
+build: export LDFLAGS_GROUPS = OPENMP
 ifeq "$(PROFILE)" "full-debug"
-build: export FFLAG_GROUPS = DEBUG WARNINGS INIT RUNTIME NO_OPTIMISATION
+build: export FFLAG_GROUPS = OPENMP DEBUG WARNINGS INIT RUNTIME NO_OPTIMISATION
 else ifeq "$(PROFILE)" "fast-debug"
 # Use fast-debug environment vars from build/fortran/*.mk configs
-build: export FFLAG_GROUPS = DEBUG WARNINGS FASTD_INIT FASTD_RUNTIME SAFE_OPTIMISATION
+build: export FFLAG_GROUPS = OPENMP DEBUG WARNINGS FASTD_INIT FASTD_RUNTIME SAFE_OPTIMISATION
 else ifeq "$(PROFILE)" "production"
-build: export FFLAG_GROUPS = DEBUG WARNINGS RISKY_OPTIMISATION
+build: export FFLAG_GROUPS = OPENMP DEBUG WARNINGS RISKY_OPTIMISATION
 else
   $(error Unrecognised profile "$(PROFILE)". Must be one of full-debug, fast-debug or production)
 endif
