@@ -36,22 +36,3 @@ export ukca_rev=um13.7
 export ukca_sources=
 export um_rev=128017
 export um_sources=
-
-#### Do not edit the definitions below this line without
-#### consulting the owners of this build system
-
-# The revision and location of the build configuration files
-export config_revision=@$um_rev
-export config_root_path=fcm:um.xm_tr
-export config_type=atmos
-
-# Set to extract then preprocess the source only (this is
-# disabling the build of the atmos/recon executables)
-export extract=extract
-export compile_recon=preprocess-recon
-
-export compile_atmos=preprocess-atmos
-
-# Define any preprocessor macros that are required
-# (in addition to the ones normally used by the UM)
-export keys_atmos_extra='LFRIC=lfric USSPPREC_32B=true LSPREC_32B=true'

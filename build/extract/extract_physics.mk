@@ -16,20 +16,8 @@
 #
 ###############################################################################
 
-.PHONY: skip
-skip: extract
-
-include $(LFRIC_BUILD)/lfric.mk
-include $(LFRIC_BUILD)/cxx.mk
-include $(LFRIC_BUILD)/fortran.mk
-
-export platform_config_dir=$(strip $(shell grep -E "$(UM_FCM_TARGET_PLATFORM)\s*:\s*$(FORTRAN_COMPILER)\s*:" $(APPS_ROOT_DIR)/build/extract/target-map.txt | cut -d : -f 3))
-export optimisation_level=$(strip $(shell grep -E "$(PROFILE)\s*:\s*" $(APPS_ROOT_DIR)/build/extract/optimisation-map.txt | cut -d : -f 2))
-
 .PHONY: extract
 extract:
-	$Qif [ x$(platform_config_dir) = x ] ; then echo Unable to convert $(UM_FCM_TARGET_PLATFORM):$(FORTRAN_COMPILER) to a UM target; false; fi
-	$(info Using UM target $(platform_config_dir))
 	# Retrieve and preprocess the UM, Jules and Socrates code
 	# The UM_ENV file contains the appropriate locations and UM side
 	# environment variables
@@ -37,5 +25,4 @@ extract:
 	   && fcm make -C $(SCRATCH_DIR) -f $(APPS_ROOT_DIR)/build/extract/extract.cfg
 	# Note that if wanting to modify UM source this should be done via the
 	# UM repository either through a working copy or branch
-	$Qrsync -acvz $(SCRATCH_DIR)/preprocess-recon/ $(WORKING_DIR)/science/
-	$Qrsync -acvz $(SCRATCH_DIR)/preprocess-atmos/ $(WORKING_DIR)/science/
+	$Qrsync -acvz $(SCRATCH_DIR)/extract/ $(WORKING_DIR)/science/

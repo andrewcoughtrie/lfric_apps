@@ -8,9 +8,6 @@ PROJECT_NAME = ngarch
 
 export PROFILE ?= fast-debug
 
-# Option defined in fcm_make/target-map.txt which in turn references options
-# from fcm:um.xm_tr/fcm-make
-export UM_FCM_TARGET_PLATFORM ?= generic-x86
 # Select option for PSyclone transformation. Select "none" for no transformation.
 export PSYCLONE_TRANSFORMATION ?= minimum
 
@@ -29,10 +26,6 @@ export INTERNAL_DEPENDENCIES = $(CORE_ROOT_DIR)/infrastructure \
                                $(CORE_ROOT_DIR)/components/inventory \
                                $(CORE_ROOT_DIR)/components/lfric-xios \
 							   $(APPS_ROOT_DIR)/science/shared
-
-export UMPHYSICS_TARGETS = extract-um-physics
-export UMPHYSICS_CLEAN   = clean-um-physics
-export UM_FCM=$(UM_PHYS_DIR)/
 
 META_VN             ?= HEAD
 export META_FILE_DIR = $(PROJECT_DIR)/rose-meta/lfric-$(PROJECT_NAME)/$(META_VN)
