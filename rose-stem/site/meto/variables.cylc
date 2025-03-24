@@ -102,6 +102,7 @@
 {# Set fixed release version the KGO corresponds to #}
 {% set BASE = "vn"~VN %}
 {% include "site/meto/variables_azspice.cylc" %}
+{% include "site/meto/variables_ex1a.cylc" %}
 {% include "site/meto/variables_spice.cylc" %}
 {% include "site/meto/variables_xc40.cylc" %}
 

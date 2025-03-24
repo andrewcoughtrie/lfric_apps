@@ -288,4 +288,86 @@
                      module list 2>&1
                      """
 
+############################################################################
+# EX1A
+############################################################################
+
+    [[EX1A_LFRICINPUTS]]
+        platform = {{site_vars.host_ex}}
+        execution time limit = PT45M
+        [[[environment]]]
+            ROSE_APP_COMMAND_KEY = ex1a_xios_server
+{% if site_vars["host_ex"] == "exz" %}
+            UMDIR           = '/common/umdir'
+            BIG_DATA_DIR    = '/common/internal/lfricdir/data'
+{% else %}
+            UMDIR           = '/common/internal/umdir'
+            BIG_DATA_DIR    = '/data/users/lfricadmin/data'
+{% endif %}
+
+{% for tasks in [1, 2, 6] %}
+    [[METO_EX1A_{{tasks}}_TASKS]]
+        [[[directives]]]
+            -l select=1:ncpus={{tasks}}:mem=16GB:tmpsize=8GB
+            -q=shared
+        [[[environment]]]
+            ROSE_LAUNCHER = mpiexec
+            ROSE_LAUNCHER_PREOPTS = -n {{tasks}}
+{% endfor %}
+
+{% for tasks in [126] %}
+    [[METO_EX1A_{{tasks}}_TASKS]]
+        [[[environment]]]
+            {# Added node for XIOS server #}
+            NUM_NODES = {{(tasks/128) | round(0, 'ceil') | int + 1}}
+            TOTAL_MPI_TASKS = {{tasks}}
+        [[[directives]]]
+            {# Added node for XIOS server #}
+            -l select={{(tasks/128) | round(0, 'ceil') | int + 1}}:ncpus=256:coretype=milan
+{% endfor %}
+
+    [[METO_EX1A_RUN_TASKS]]
+ 	    inherit=METO_EX1A_126_TASKS
+
+    [[METO_EX1A_NORMAL_QUEUE]]
+        [[[environment]]]
+            ROSE_LAUNCHER = mpiexec
+            OMP_NUM_THREADS = 1
+            ROSE_LAUNCHER_PREOPTS= \
+              --cpu-bind=depth -n ${TOTAL_MPI_TASKS:-1} \
+              -d $OMP_NUM_THREADS -ppn 128
+        [[[directives]]]
+            -q = normal
+
+    [[METO_EX1A_GNU]]
+        pre-script = """
+                     module use /common/internal/spack/ngms
+                     module switch cpe/22.11 cpe/23.05
+                     module load PrgEnv-gnu
+                     module load gcc/12.2.0
+                     module load lfric-gnu/12.2.0/1.0 || true
+                     export LD_LIBRARY_PATH=/opt/cray/pe/pmi/6.1.11/lib:$LD_LIBRARY_PATH
+                     module list 2>&1
+                     """
+
+    [[METO_EX1A_CCE]]
+        pre-script = """
+                     module use /common/internal/spack/ngms
+                     module switch PrgEnv-cray PrgEnv-cray/8.4.0
+                     module load cpe/23.05
+                     module switch cce cce/15.0.0
+                     module load lfric-cray/15.0.0/1.0 || true
+                     export LD_LIBRARY_PATH=/opt/cray/pe/pmi/6.1.11/lib:$LD_LIBRARY_PATH
+                     module list 2>&1
+                     """
+
+    [[ROSE_ANA_EX1A]]
+        pre-script = """
+                     module load nccmp/1.9.1.0
+                     module load scitools/production-os46-3
+                     module load um_tools/2023.08.1/openmp
+                     export ROSE_PYTHONPATH="$PYTHONPATH"
+                     module list 2>&1
+                     """
+
 {% do LOG.debug("Finished in site/meto/common/suite_config_lfricinputs.cylc") %}
