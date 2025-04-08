@@ -12,7 +12,6 @@ module radiation_diags_mod
   use integer_field_mod,        only: integer_field_type
   use io_config_mod,            only: subroutine_timers
   use timer_mod,                only: timer
-  use timestepping_config_mod,  only: dt
   use initialise_diagnostics_mod, only: init_diag => init_diagnostic_field, &
                                         diagnostic_to_be_sampled
 
@@ -415,7 +414,7 @@ subroutine output_diags_for_radiation( dtheta_rad, &
   sw_down_uv_surf_rts, sw_down_uv_clear_surf_rts, &
   sw_direct_uv_surf_rts, sw_direct_uv_clear_surf_rts, &
   sw_up_uv_surf_rts, sw_up_uv_clear_surf_rts, &
-  photolysis_rates_rts )
+  photolysis_rates_rts, dt )
 
   implicit none
 
@@ -481,6 +480,8 @@ subroutine output_diags_for_radiation( dtheta_rad, &
     sw_direct_uv_surf_rts, sw_direct_uv_clear_surf_rts, &
     sw_up_uv_surf_rts, sw_up_uv_clear_surf_rts, &
     photolysis_rates_rts
+
+  real(r_def), intent(in) :: dt
 
   ! Diagnostics locally computed here from other fields
   type( field_type ) :: &
@@ -549,23 +550,29 @@ subroutine output_diags_for_radiation( dtheta_rad, &
 
   call pressure_in_wth%write_field('radiation__pressure_in_layers_radinput')
   call temperature_in_wth%write_field('radiation__temperature_in_layers_radinput')
-  call d_mass%write_field('radiation__dry_mass_in_layers_radinput')
+  if (diagnostic_to_be_sampled('radiation__dry_mass_in_layers_radinput')) &
+       call d_mass%write_field('radiation__dry_mass_in_layers_radinput')
   call rho_in_wth%write_field('radiation__dry_density_in_layers_radinput')
-  call t_layer_boundaries%write_field('radiation__t_layer_boundaries_radinput')
+  if (diagnostic_to_be_sampled('radiation__t_layer_boundaries_radinput')) &
+       call t_layer_boundaries%write_field('radiation__t_layer_boundaries_radinput')
   call m_v%write_field('radiation__h2o_mmr_radinput')
   call ozone%write_field('radiation__o3_mmr_radinput')
   call tile_fraction%write_field('radiation__tile_fraction_radinput')
   call tile_temperature%write_field('radiation__tile_temperature_radinput')
   call tile_lw_albedo%write_field('radiation__tile_lw_albedo_radinput')
-  call tile_sw_diffuse_albedo%write_field('radiation__tile_sw_diffuse_albedo_radinput')
-  call tile_sw_direct_albedo%write_field('radiation__tile_sw_direct_albedo_radinput')
+  if (diagnostic_to_be_sampled('radiation__tile_sw_diffuse_albedo_radinput')) &
+       call tile_sw_diffuse_albedo%write_field('radiation__tile_sw_diffuse_albedo_radinput')
+  if (diagnostic_to_be_sampled('radiation__tile_sw_direct_albedo_radinput')) &
+       call tile_sw_direct_albedo%write_field('radiation__tile_sw_direct_albedo_radinput')
 
   call radiative_cloud_fraction%write_field('radiation__radiative_cloud_fraction_radinput')
   call liquid_fraction%write_field('radiation__liquid_fraction_radinput')
   call frozen_fraction%write_field('radiation__frozen_fraction_radinput')
   call mcl%write_field('radiation__liquid_mmr_radinput')
-  call mci%write_field('radiation__frozen_mmr_radinput')
-  call n_ice%write_field('radiation__ice_no_conc_radinput')
+  if (diagnostic_to_be_sampled('radiation__frozen_mmr_radinput')) &
+       call mci%write_field('radiation__frozen_mmr_radinput')
+  if (diagnostic_to_be_sampled('radiation__ice_no_conc_radinput')) &
+       call n_ice%write_field('radiation__ice_no_conc_radinput')
   call cloud_drop_no_conc%write_field('radiation__cloud_drop_no_conc_radinput')
   call radiative_conv_fraction%write_field('radiation__radiative_conv_fraction_radinput')
   call conv_liquid_fraction%write_field('radiation__conv_liquid_fraction_radinput')
@@ -574,9 +581,10 @@ subroutine output_diags_for_radiation( dtheta_rad, &
   call conv_frozen_mmr%write_field('radiation__conv_frozen_mmr_radinput')
   call sigma_mc%write_field('radiation__sigma_condensate_radinput')
 
-  call layer_heat_capacity%write_field('radiation__layer_heat_capacity_radinput')
-
-  call sulphuric%write_field('radiation__sulphuric_aerosol_radinput')
+  if (diagnostic_to_be_sampled('radiation__layer_heat_capacity_radinput')) &
+       call layer_heat_capacity%write_field('radiation__layer_heat_capacity_radinput')
+  if (diagnostic_to_be_sampled('radiation__sulphuric_aerosol_radinput')) &
+       call sulphuric%write_field('radiation__sulphuric_aerosol_radinput')
 
   ! Diagnostic fields that are always required by the kernels
   call lw_up_surf%write_field()

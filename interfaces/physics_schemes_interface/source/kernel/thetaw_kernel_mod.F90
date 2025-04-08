@@ -13,7 +13,7 @@ module thetaw_kernel_mod
                            GH_INTEGER,                &
                            GH_REAL, CELL_COLUMN,      &
                            ANY_DISCONTINUOUS_SPACE_1
-  use constants_mod, only: r_def, i_def, l_def
+  use constants_mod, only: r_def, i_def, l_def, r_um
   use kernel_mod,    only: kernel_type
 
   implicit none
@@ -82,12 +82,18 @@ contains
     ! Logical to output potential temperature (rather than temperature) from
     ! thetaw subroutine
     logical(kind=l_def), parameter :: l_potential = .true.
+    real(r_um), dimension(segment_length) :: temperature_um, qv_um, &
+         pressure_um, theta_w_um
 
     do kp = 1, nplev
 
+      temperature_um = real(temperature(map(1)+kp-1),r_um)
+      qv_um = real(qv(map(1)+kp-1),r_um)
+      pressure_um = real(plevs(kp),r_um)
       ! Call thetaw code and update thetaw array
-      call thetaw(segment_length, temperature(map(1)+kp-1), qv(map(1)+kp-1), &
-                  plevs(kp), l_potential, theta_w(map(1)+kp-1) )
+      call thetaw(segment_length, temperature_um, qv_um, &
+                  pressure_um, l_potential, theta_w_um )
+      theta_w(map(1)+kp-1) = theta_w_um(1)
 
     end do
 

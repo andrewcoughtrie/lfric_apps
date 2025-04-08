@@ -410,6 +410,7 @@ contains
 
     ! Controls how random seed will be set
     integer(i_def) :: ensemble_number
+    real(r_def) :: dt
 #endif
 
 
@@ -802,9 +803,10 @@ contains
       if (radiation == radiation_socrates) then
         ! Initialisation for the Socrates radiation scheme
         radiation_fields => modeldb%fields%get_field_collection("radiation_fields")
+        dt = real(modeldb%clock%get_seconds_per_step(), r_def)
         call illuminate_alg( radiation_fields,                    &
                              modeldb%clock%get_step(),            &
-                             modeldb%clock%get_seconds_per_step())
+                             dt)
       end if
       ! Initialisation of UM variables related to the mesh
       call um_domain_init(mesh)

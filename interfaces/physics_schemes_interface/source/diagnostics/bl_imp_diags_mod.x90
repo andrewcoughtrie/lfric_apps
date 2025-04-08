@@ -14,7 +14,8 @@ module bl_imp_diags_mod
   use io_config_mod,             only: subroutine_timers
   use timer_mod,                 only: timer
 
-  use initialise_diagnostics_mod,     only : init_diag => init_diagnostic_field
+  use initialise_diagnostics_mod, only : init_diag => init_diagnostic_field, &
+                                         samp_diag => diagnostic_to_be_sampled
 
   implicit none
 
@@ -271,7 +272,7 @@ contains
     if ( subroutine_timers ) call timer("bl_imp_diags")
 
     ! Output prognostic fields
-    call murk%write_field('aerosol__murk')
+    if (samp_diag('aerosol__murk')) call murk%write_field('aerosol__murk')
 
     call dtheta_bl%write_field('turbulence__dtheta_blcnv')
     call zh%write_field('turbulence__zh')

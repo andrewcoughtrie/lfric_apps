@@ -7,13 +7,13 @@
 
 module realtype_rd
 
-  use constants_mod, only: r_def
+  use constants_mod, only: r_def, r_um
 
   implicit none
   private
 
   ! Internal Socrates precision
-  integer, public, parameter :: RealK = r_def
+  integer, public, parameter :: RealK = r_um
 
   ! Precision of variables passed through the Socrates interface
   integer, public, parameter :: RealExt = r_def

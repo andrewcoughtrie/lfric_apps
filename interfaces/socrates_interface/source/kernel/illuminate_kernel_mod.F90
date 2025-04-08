@@ -15,7 +15,7 @@ use argument_mod,  only : arg_type,                  &
                           ANY_DISCONTINUOUS_SPACE_1, &
                           ANY_DISCONTINUOUS_SPACE_2, &
                           ANY_DISCONTINUOUS_SPACE_3
-use constants_mod, only : r_def, i_def, r_second
+use constants_mod, only : r_def, i_def
 use kernel_mod,    only : kernel_type
 
 implicit none
@@ -131,7 +131,7 @@ subroutine illuminate_code(nlayers,                          &
 
   ! Arguments
   integer(i_def), intent(in) :: nlayers, timestep, current_year, day_of_year
-  real(r_second), intent(in) :: dt, second_of_day
+  real(r_def),    intent(in) :: dt, second_of_day
   integer(i_def), intent(in) :: ndf_2d, undf_2d
   integer(i_def), intent(in) :: ndf_h_ang, undf_h_ang
   integer(i_def), intent(in) :: ndf_h_asp, undf_h_asp

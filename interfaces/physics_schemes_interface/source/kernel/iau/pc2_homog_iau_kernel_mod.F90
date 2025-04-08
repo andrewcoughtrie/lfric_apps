@@ -102,7 +102,7 @@ subroutine pc2_homog_iau_code( nlayers,                    &
                                dt,                         &
                                ndf_wth, undf_wth, map_wth  )
 
-    use constants_mod, only: r_def, i_def, r_um, i_um
+    use constants_mod, only: r_def, i_def, r_um, i_um, r_second
 
     !---------------------------------------
     ! UM modules
@@ -118,7 +118,7 @@ subroutine pc2_homog_iau_code( nlayers,                    &
     integer(kind=i_def), intent(in) :: nlayers
     integer(kind=i_def), intent(in) :: ndf_wth
     integer(kind=i_def), intent(in) :: undf_wth
-    real(kind=r_def),    intent(in) :: dt
+    real(kind=r_second),    intent(in) :: dt
 
     real(kind=r_def), intent(in),  dimension(undf_wth) :: mv_wth
     real(kind=r_def), intent(in),  dimension(undf_wth) :: ml_wth

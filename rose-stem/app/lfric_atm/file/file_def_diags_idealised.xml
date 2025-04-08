@@ -15,8 +15,6 @@
     <field field_ref="radiation__sw_down_blue_surf_rts" />
     <field field_ref="radiation__sw_direct_blue_surf_rts" />
     <field field_ref="radiation__sw_up_surf_rts" />
-    <field field_ref="radiation__sw_up_clear_toa_rts" />
-    <field field_ref="radiation__sw_up_clear_surf_rts" />
     <field field_ref="radiation__lw_up_toa_rts" />
     <field field_ref="radiation__lw_down_surf_rts" />
     <field field_ref="radiation__lw_up_surf_rts" />
@@ -69,7 +67,6 @@
     <field field_ref="forcing__dt_force" />
     <field field_ref="cloud__area_fraction" />
     <field field_ref="processed__m_tot" />
-    <field field_ref="radiation__cloud_cover_rts" />
     <field field_ref="cloud__cloud_base_altitude" />
     <field field_ref="processed__trop_level" />
     <field field_ref="convection__cv_top" />

@@ -58,6 +58,7 @@ contains
     type(field_type)                :: ones
 
     real(r_def) :: sum_delta, sum_ones
+    real(r_def), allocatable :: eta_theta_def(:)
 
     integer(i_def) :: k
     integer(i_def) :: n_cells, n_panels, cells_per_panel, cells_per_side
@@ -70,8 +71,10 @@ contains
     ! in any kernel whos external code uses the variables.
     ! Ideally the UM code will be changed so that they are passed in
     ! through the argument list.
-    allocate(eta_theta_levels(0:number_of_layers), source=rmdi)
-    call mesh%get_eta(eta_theta_levels)
+    allocate(eta_theta_levels(0:number_of_layers))
+    allocate(eta_theta_def(0:number_of_layers), source=rmdi)
+    call mesh%get_eta(eta_theta_def)
+    eta_theta_levels = real(eta_theta_def, r_um)
 
     ! This is a temporary method of calculating
     ! the global mean of a field - once psyclone#489 is live,

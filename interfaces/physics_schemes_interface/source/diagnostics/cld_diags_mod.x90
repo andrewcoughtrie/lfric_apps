@@ -26,8 +26,8 @@ module cld_diags_mod
   use icing_diags_kernel_mod,  only: icing_diags_kernel_type
   use microphysics_config_mod, only: microphysics_casim
 
-  use initialise_diagnostics_mod,     only : init_diag &
-                                             => init_diagnostic_field
+  use initialise_diagnostics_mod, only : init_diag => init_diagnostic_field, &
+                                         samp_diag => diagnostic_to_be_sampled
 
   implicit none
 
@@ -339,7 +339,8 @@ contains
       select type(field_ptr)
       type is (field_type)
         name = trim(adjustl( field_ptr%get_name() ))
-        call field_ptr%write_field('cloud__'//trim(name))
+        if (samp_diag('cloud__'//trim(name))) &
+             call field_ptr%write_field('cloud__'//trim(name))
       end select
     end do
     field_ptr => null()

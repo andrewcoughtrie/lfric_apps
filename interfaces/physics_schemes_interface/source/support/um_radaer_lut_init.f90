@@ -7,6 +7,7 @@
 
 module um_radaer_lut_init_mod
 
+  use constants_mod,             only : r_um
   use aerosol_config_mod,        only : aclw_file,                 &
                                         acsw_file,                 &
                                         anlw_file,                 &
@@ -101,12 +102,12 @@ contains
             call um_read_radaer_lut ( dummy_file, &
                                       ip_ukca_lut_supercoarse, ip_ukca_lut_sw )
 
-            call ukca_radaer_read_precalc( prec_file,           &
-                                           sw_wavelength_short, &
-                                           sw_wavelength_long,  &
-                                           lw_wavelength_short, &
-                                           lw_wavelength_long,  &
-                                           n_sw_band,           &
+            call ukca_radaer_read_precalc( prec_file,                      &
+                                           real(sw_wavelength_short,r_um), &
+                                           real(sw_wavelength_long,r_um),  &
+                                           real(lw_wavelength_short,r_um), &
+                                           real(lw_wavelength_long,r_um),  &
+                                           n_sw_band,                      &
                                            n_lw_band )
           end if
 

@@ -114,7 +114,7 @@ module gungho_init_fields_mod
   use fs_continuity_mod,                  only : W1, W2
 #ifdef UM_PHYSICS
   use planet_config_mod,                  only: rgas => rd
-  use dust_parameters_mod,                only: rhop
+  use dust_parameters_mod,                only: rhop_def
   use aerosol_config_mod,                 only : glomap_mode, &
                                                  glomap_mode_dust_and_clim
   use section_choice_config_mod,          only : aerosol, aerosol_um
@@ -718,7 +718,7 @@ subroutine create_model_data( modeldb,      &
             call invoke(dust_transform_kernel_type ( n_acc_ins, acc_ins_du, &
                                                      n_cor_ins, cor_ins_du, &
                                                      dust1_mmr, dust2_mmr,  &
-                                                     rhop, rgas ) )
+                                                     rhop_def, rgas ) )
 
             call fd_fields%remove_field("dust1_mmr")
             call depository%remove_field("dust1_mmr")

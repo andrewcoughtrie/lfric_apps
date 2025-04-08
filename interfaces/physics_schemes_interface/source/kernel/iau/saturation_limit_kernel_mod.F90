@@ -13,7 +13,7 @@ module saturation_limit_kernel_mod
                                 GH_READWRITE, &
                                 GH_READ,      &
                                 CELL_COLUMN
-  use constants_mod,     only : r_def, i_def, r_um
+  use constants_mod,     only : r_def, i_def
   use fs_continuity_mod, only : WTHETA
   use kernel_mod,        only : kernel_type
   use qsat_mod,          only : qsat_wat_mix
@@ -75,7 +75,7 @@ contains
       integer( kind=i_def ) :: k
 
       !UM definition for qsat capping
-      real( kind=r_um ) :: msat
+      real( kind=r_def ) :: msat
 
       do k = 0, nlayers
 

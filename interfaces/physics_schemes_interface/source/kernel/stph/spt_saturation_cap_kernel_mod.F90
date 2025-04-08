@@ -11,7 +11,7 @@ module spt_saturation_cap_kernel_mod
                                GH_READ, CELL_COLUMN
 
   use fs_continuity_mod, only: Wtheta
-  use constants_mod,     only: r_def, i_def, r_um
+  use constants_mod,     only: r_def, i_def
   use kernel_mod,        only: kernel_type
 
   implicit none
@@ -89,7 +89,7 @@ contains
 
 
     !UM definition for qsat capping
-    real(kind=r_um) :: qsat
+    real(kind=r_def) :: qsat
 
     integer(kind=i_def) :: k
 

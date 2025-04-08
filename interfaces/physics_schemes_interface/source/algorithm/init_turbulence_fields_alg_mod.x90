@@ -52,6 +52,9 @@ contains
     type( field_type ), pointer :: ent_we_lim_dsc => null()
     type( field_type ), pointer :: ent_t_frac_dsc => null()
     type( field_type ), pointer :: ent_zrzi_dsc   => null()
+    type( field_type ), pointer :: dsldzm
+    type( field_type ), pointer :: mix_len_bm
+    type( field_type ), pointer :: gradrinr
 
     call turbulence_fields%get_field('zh', zh)
     call turbulence_fields%get_field('z_lcl', z_lcl)
@@ -72,6 +75,9 @@ contains
     call turbulence_fields%get_field('ent_we_lim_dsc', ent_we_lim_dsc)
     call turbulence_fields%get_field('ent_t_frac_dsc', ent_t_frac_dsc)
     call turbulence_fields%get_field('ent_zrzi_dsc', ent_zrzi_dsc)
+    call turbulence_fields%get_field('dsldzm', dsldzm)
+    call turbulence_fields%get_field('mix_len_bm', mix_len_bm)
+    call turbulence_fields%get_field('gradrinr', gradrinr)
 
     ! Set turbulence fields to fixed values for use in SCM testing
     ! or when no values is provided by the um2lfric dump
@@ -93,7 +99,10 @@ contains
                  setval_c(ent_zrzi,       0.0_r_def), &
                  setval_c(ent_we_lim_dsc, 0.0_r_def), &
                  setval_c(ent_t_frac_dsc, 0.0_r_def), &
-                 setval_c(ent_zrzi_dsc,   0.0_r_def) )
+                 setval_c(ent_zrzi_dsc,   0.0_r_def), &
+                 setval_c(dsldzm,         0.0_r_def), &
+                 setval_c(mix_len_bm,     0.0_r_def), &
+                 setval_c(gradrinr,       0.0_r_def) )
 
   end subroutine init_turbulence_fields_alg
 

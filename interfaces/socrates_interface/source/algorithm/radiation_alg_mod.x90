@@ -16,7 +16,6 @@ use fs_continuity_mod,       only: W3, Wtheta
 use mr_indices_mod,          only: nummr, imr_v, imr_cl, imr_ci, imr_s
 use moist_dyn_mod,           only: num_moist_factors, total_mass
 use constants_mod,           only: r_def, i_def, l_def
-use timestepping_config_mod, only: dt
 use io_config_mod,           only: write_diag, use_xios_io
 use sci_geometric_constants_mod,   &
                              only: get_dz_at_wtheta
@@ -81,7 +80,7 @@ contains
 !> @param[in,out] conv_frozen_fraction     Convective frozen cloud fraction
 !> @param[in,out] conv_liquid_mmr          Convective liquid gridbox MMR
 !> @param[in,out] conv_frozen_mmr          Convective frozen gridbox MMR
-
+!> @param[in]     dt                       Timestep length (s)
 subroutine radiation_alg(dtheta_rad, theta, exner, mr, moist_dyn,             &
                          pressure_in_wth, temperature_in_wth,                 &
                          derived_fields, radiation_fields, cloud_fields,      &
@@ -94,7 +93,7 @@ subroutine radiation_alg(dtheta_rad, theta, exner, mr, moist_dyn,             &
                          rand_seed, n_cloud_layer,                            &
                          radiative_cloud_fraction, radiative_conv_fraction,   &
                          conv_liquid_fraction, conv_frozen_fraction,          &
-                         conv_liquid_mmr, conv_frozen_mmr)
+                         conv_liquid_mmr, conv_frozen_mmr, dt)
 
   implicit none
 
@@ -125,6 +124,7 @@ subroutine radiation_alg(dtheta_rad, theta, exner, mr, moist_dyn,             &
   type( field_collection_type ), intent(in) :: chemistry_fields
   type( field_collection_type ), intent(in) :: surface_fields
   logical( kind=l_def ), intent(in) :: rad_this_tstep, rad_inc_this_tstep
+  real( kind=r_def ), intent(in) :: dt
 
   real( kind=r_def ) :: dt_again
   type(mesh_type), pointer :: mesh      => null()
@@ -746,7 +746,7 @@ subroutine radiation_alg(dtheta_rad, theta, exner, mr, moist_dyn,             &
       sw_down_uv_surf_rts, sw_down_uv_clear_surf_rts, &
       sw_direct_uv_surf_rts, sw_direct_uv_clear_surf_rts, &
       sw_up_uv_surf_rts, sw_up_uv_clear_surf_rts, &
-      photolysis_rates_rts )
+      photolysis_rates_rts, dt )
   end if
 
   nullify ( mesh, twod_mesh )

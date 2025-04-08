@@ -249,7 +249,7 @@ contains
     logical(l_def),      parameter :: avg = .true.   ! Precip=local*prob
     integer(kind=i_def), parameter :: fog_thres=1
     integer(kind=i_def), parameter :: vis5km_thres=2
-    real(kind=r_def),    parameter :: calc_prob_of_vis = 0.5_r_def
+    real(kind=r_um),     parameter :: calc_prob_of_vis = 0.5_r_um
 
     ! single level real fields input
     real(r_um), dimension(row_length,rows) ::                                &

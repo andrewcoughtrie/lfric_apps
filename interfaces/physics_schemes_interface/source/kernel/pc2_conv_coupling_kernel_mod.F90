@@ -239,7 +239,7 @@ subroutine pc2_conv_coupling_code( nlayers, seg_len,                           &
       end if
 
       call pc2_hom_conv(p_work,           & ! Pressure
-                        dt,               & ! Model timestep in seconds
+                        real(dt,r_um),    & ! Model timestep in seconds
                         ! Variables
                         t_work,           & ! Temperature
                         qv_work,          & ! Water vapour

@@ -279,7 +279,7 @@ contains
         call jules_extra_alg(microphysics_fields, convection_fields,        &
                              surface_fields, soil_fields, snow_fields,      &
                              surf_heat_flux, canopy_evap,                   &
-                             water_extraction, lake_evap)
+                             water_extraction, lake_evap, dt)
 
       end if ! jules
     end if ! fast_bl

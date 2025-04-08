@@ -626,7 +626,7 @@ subroutine sw_rad_tile_code(nlayers, seg_len,                       &
   call surf_couple_radiation( &
     ! Misc INTENT(IN)
     ws_10m_sea, chloro, &
-    n_band, n_band, wavelength_short, wavelength_long, &
+    n_band, n_band, real(wavelength_short,r_um), real(wavelength_long,r_um), &
     ! Misc INTENT(OUT)
     sea_ice_albedo, &
     ! (ancil_info mod)

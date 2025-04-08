@@ -27,7 +27,7 @@ use ereport_mod, only: ereport
 use yomhook,  only: lhook, dr_hook
 use parkind1, only: jprb, jpim
 use errormessagelength_mod, only: errormessagelength
-
+use constants_mod, only: r_def
 use um_types, only: real_umphys
 
 implicit none
@@ -89,7 +89,7 @@ real(kind=real_umphys), allocatable ::  drep(:)
 ! Physical properties of the dust
 real(kind=real_umphys), parameter :: rhop = 2.65e+3
                                    ! density of a dust particle (quartz)
-
+real(r_def), parameter :: rhop_def = real(rhop, r_def)
 !
 ! Parameters used during dust emissions calculations
 ! =======================================================================

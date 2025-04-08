@@ -123,9 +123,10 @@ contains
     real(kind=r_def), intent(inout) :: frozen_soil_moisture(undf_soil)
 
     real(r_um), dimension(1) :: fexp, ti_mean, ti_sig,  &
-         gamtot, a_fsat, c_fsat, a_fwet, c_fwet, dummy
+         gamtot, a_fsat, c_fsat, a_fwet, c_fwet, dummy, cl_h_b, &
+         soil_suc_sat, soil_m_sat
 
-    real(r_um), dimension(sm_levels) :: sthu, sthf
+    real(r_um), dimension(sm_levels) :: sthu, sthf, soil_temp, soil_moist
 
     integer(i_um), dimension(1) :: soil_index
 
@@ -180,11 +181,13 @@ contains
       end do
 
       ! Calculate frozen and unfrozen soil fractions
-      call freeze_soil(soil_pts, sm_levels, clapp_horn_b(map_2d(1)),           &
-                       dzsoil, soil_suction_sat(map_2d(1)),                    &
-                       soil_moisture(map_soil(1):map_soil(1)+sm_levels-1),     &
-                       soil_temperature(map_soil(1):map_soil(1)+sm_levels-1),  &
-                       soil_moist_sat(map_2d(1)), sthu, sthf)
+      cl_h_b = real(clapp_horn_b(map_2d(1)),r_um)
+      soil_suc_sat = real(soil_suction_sat(map_2d(1)),r_um)
+      soil_moist = real(soil_moisture(map_soil(1):map_soil(1)+sm_levels-1),r_um)
+      soil_temp = real(soil_temperature(map_soil(1):map_soil(1)+sm_levels-1),r_um)
+      soil_m_sat = real(soil_moist_sat(map_2d(1)),r_um)
+      call freeze_soil(soil_pts, sm_levels, cl_h_b, dzsoil, soil_suc_sat,      &
+                       soil_moist, soil_temp, soil_m_sat, sthu, sthf)
 
       unfrozen_soil_moisture(map_soil(1):map_soil(1)+sm_levels-1) = sthu
       frozen_soil_moisture(map_soil(1):map_soil(1)+sm_levels-1) = sthf

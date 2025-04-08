@@ -28,7 +28,7 @@ use radiation_config_mod, only: cloud_representation, &
                                 cloud_representation_conv_strat_liq_ice, &
                                 cloud_representation_split
 use cloud_inputs_mod, only: allicetdegc, starticetkelvin
-use conversions_mod,   only: zerodegc
+use science_conversions_mod,   only: zero_degrees_celsius
 implicit none
 private
 public :: rad_cloud_alg
@@ -91,6 +91,7 @@ subroutine rad_cloud_alg(rand_seed, n_cloud_layer, &
   type( field_type ), pointer :: longitude => null()
   type( xios_date ) :: datetime
   integer( i_def ) :: year, day_of_year, second_of_day, number_of_wtheta_layers
+  real( r_def ) :: allicetdegc_def, starticetkelvin_def
 
   ! Number of unique random seeds per degree latitude
   integer( i_def ), parameter :: per_deg_lat = 100_i_def
@@ -145,13 +146,15 @@ subroutine rad_cloud_alg(rand_seed, n_cloud_layer, &
     case ( cloud_representation_combined, &
            cloud_representation_conv_strat_liq_ice, &
            cloud_representation_split)
+      allicetdegc_def = real(allicetdegc, r_def)
+      starticetkelvin_def = real(starticetkelvin, r_def)
       call invoke( set_rad_cloud_kernel_type( &
                    radiative_cloud_fraction, radiative_conv_fraction, &
                    conv_liquid_fraction, conv_frozen_fraction, &
                    conv_liquid_mmr, conv_frozen_mmr, &
                    area_fraction, cca, ccw, &
-                   temperature_in_wth, allicetdegc, starticetkelvin, &
-                   zerodegc ), &
+                   temperature_in_wth, allicetdegc_def, starticetkelvin_def, &
+                   zero_degrees_celsius ), &
                    name="set_rad_cloud" )
     case default
       call invoke( setval_x(radiative_cloud_fraction, area_fraction), &

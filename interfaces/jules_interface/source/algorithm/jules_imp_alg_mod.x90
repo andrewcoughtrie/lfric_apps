@@ -244,7 +244,8 @@ contains
       call tile_temperature%copy_field_properties(canopy_evap)
       call soil_temperature%copy_field_properties(water_extraction)
       call sw_down_surf%copy_field_properties(lake_evap)
-      call invoke(setval_c(lake_evap, 0.0_r_def))
+      call invoke(setval_c(lake_evap, 0.0_r_def), &
+                  setval_c(canopy_evap, 0.0_r_def))
 
     end if
 

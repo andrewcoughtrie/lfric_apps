@@ -11,14 +11,14 @@
 {% do site_groups.update({
     "lfric_atm_nwp_spice_developer": [
         "lfric_atm_nwp_gal9_nomg-C12_spice_intel_fast-debug-64bit",
-        "lfric_atm_nwp_gal9_nomg-C12_spice_intel_production-64bit-rbl32-rtran32",
+        "lfric_atm_nwp_gal9_nomg-C12_spice_intel_production-64bit-rbl32-rdef32-rtran32",
         "lfric_atm_nwp_gal9_molw-C12_spice_intel_fast-debug-64bit",
         "lfric_atm_nwp_gal9_debug-C12_spice_intel_full-debug-64bit",
         "lfric_atm_nwp_gal9_debug-C12_spice_gnu_full-debug-64bit",
         "lfric_atm_nwp_gal9_short-C12_spice_intel_fast-debug-64bit",
     ],
     "lfric_atm_nwp_spice_extra": [
-        "lfric_atm_nwp_gal9_nomg-C12_spice_intel_fast-debug-64bit-rbl32-rtran32",
+        "lfric_atm_nwp_gal9_nomg-C12_spice_intel_fast-debug-64bit-rbl32-rdef32-rtran32",
         "lfric_atm_nwp_gal9-C48_MG_spice_intel_fast-debug-64bit",
         "lfric_atm_nwp_gal9_coarse_aero-C48_MG_spice_intel_fast-debug-64bit",
         "lfric_atm_nwp_gal9_da-C12_spice_intel_fast-debug-64bit",
@@ -111,7 +111,7 @@
         "lfric_atm_nwp_gal9_short-C12_azspice_gnu_fast-debug-64bit",
     ],
     "lfric_atm_nwp_azspice_extra": [
-        "lfric_atm_nwp_gal9_nomg-C12_azspice_gnu_fast-debug-64bit-rbl32-rtran32",
+        "lfric_atm_nwp_gal9_nomg-C12_azspice_gnu_fast-debug-64bit-rbl32-rdef32-rtran32",
         "lfric_atm_nwp_gal9-C48_MG_azspice_gnu_fast-debug-64bit",
         "lfric_atm_nwp_gal9_coarse_aero-C48_MG_azspice_gnu_fast-debug-64bit",
         "lfric_atm_nwp_gal9_da-C12_azspice_gnu_fast-debug-64bit",
@@ -192,13 +192,13 @@
 {% do site_groups.update({
     "lfric_atm_nwp_xc40_developer": [
         "lfric_atm_nwp_gal9_nomg-C12_xc40_intel_fast-debug-64bit",
-        "lfric_atm_nwp_gal9_nomg-C12_xc40_intel_production-64bit-rbl32-rtran32",
+        "lfric_atm_nwp_gal9_nomg-C12_xc40_intel_production-64bit-rbl32-rdef32-rtran32",
         "lfric_atm_nwp_gal9_molw-C12_xc40_intel_fast-debug-64bit",
         "lfric_atm_nwp_gal9_debug-C12_xc40_intel_full-debug-64bit",
         "lfric_atm_nwp_gal9_short-C12_xc40_intel_fast-debug-64bit",
     ],
     "lfric_atm_nwp_xc40_extra": [
-        "lfric_atm_nwp_gal9_nomg-C12_xc40_intel_fast-debug-64bit-rbl32-rtran32",
+        "lfric_atm_nwp_gal9_nomg-C12_xc40_intel_fast-debug-64bit-rbl32-rdef32-rtran32",
         "lfric_atm_nwp_gal9-C48_MG_xc40_intel_fast-debug-64bit",
         "lfric_atm_nwp_gal9-C48_MG_xc40_perftools-intel_fast-debug-64bit",
         "lfric_atm_nwp_gal9_coarse_aero-C48_MG_xc40_intel_fast-debug-64bit",
@@ -325,13 +325,13 @@
 {% do site_groups.update({
     "lfric_atm_nwp_ex1a_developer": [
         "lfric_atm_nwp_gal9_nomg-C12_ex1a_cce_fast-debug-64bit",
-        "lfric_atm_nwp_gal9_nomg-C12_ex1a_cce_production-64bit-rbl32-rtran32",
+        "lfric_atm_nwp_gal9_nomg-C12_ex1a_cce_production-64bit-rbl32-rdef32-rtran32",
         "lfric_atm_nwp_gal9_molw-C12_ex1a_cce_fast-debug-64bit",
         "lfric_atm_nwp_gal9_debug-C12_ex1a_gnu_full-debug-64bit",
         "lfric_atm_nwp_gal9_short-C12_ex1a_cce_fast-debug-64bit",
     ],
     "lfric_atm_nwp_ex1a_extra": [
-        "lfric_atm_nwp_gal9_nomg-C12_ex1a_cce_fast-debug-64bit-rbl32-rtran32",
+        "lfric_atm_nwp_gal9_nomg-C12_ex1a_cce_fast-debug-64bit-rbl32-rdef32-rtran32",
         "lfric_atm_nwp_gal9-C48_MG_ex1a_cce_fast-debug-64bit",
         "lfric_atm_nwp_gal9_coarse_aero-C48_MG_ex1a_cce_fast-debug-64bit",
         "lfric_atm_nwp_gal9_ls_and_jedi-C12_ex1a_cce_fast-debug-64bit",

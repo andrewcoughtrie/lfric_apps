@@ -8,7 +8,7 @@
 
 module update_iau_inc_alg_mod
 
-  use constants_mod,                    only : r_def, i_def
+  use constants_mod,                    only : r_def, i_def, r_second
   use dry_rho_alg_mod,                  only : dry_rho
   use field_array_mod,                  only : field_array_type
   use field_mod,                        only : field_type
@@ -139,8 +139,10 @@ module update_iau_inc_alg_mod
     ! Others
     type( integer_field_type )  :: trop_level
     real(kind=r_def)            :: iau_weight
+    real(kind=r_second)         :: dt
 
     iau_weight = calc_iau_weight( model_clock )
+    dt = model_clock%get_seconds_per_step()
 
     write(log_scratch_space,'(A,F16.8)') 'IAU: weight used = ', iau_weight
     call log_event( log_scratch_space, log_level_info )
@@ -264,7 +266,7 @@ module update_iau_inc_alg_mod
                                  m_r, mr_earlier,                  &
                                  m_s, ms_earlier,                  &
                                  m_g, mg_earlier,                  &
-                                 cloud_fields )
+                                 cloud_fields, dt )
 
       call log_event( '- After pc2_assimilation -', log_level_debug )
       call print_minmax_cld( cloud_fields, log_level_debug )

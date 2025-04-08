@@ -127,7 +127,9 @@ module spt_main_alg_mod
   use sci_geometric_constants_mod, only: get_dz_at_wtheta
 
   ! Physical constants
-  use planet_constants_mod, only: p_zero, kappa, lcrcp, planet_radius
+  use planet_constants_mod, only: recip_kappa_def, lcrcp
+  use planet_config_mod, only: p_zero
+  use extrusion_config_mod, only: planet_radius
 
   implicit none
   !!!! Arguments
@@ -217,7 +219,7 @@ module spt_main_alg_mod
   ! Scalars for power law & 1AR
   real(kind=r_def) :: beta,gamma,Lbeta,sigma,dt
   ! Physics scalars
-  real(kind=r_def) :: inv_kappa, mlcrcp
+  real(kind=r_def) :: mlcrcp
   ! iterators in for loops
   integer(i_def) :: n,n_row, m
 
@@ -325,9 +327,8 @@ module spt_main_alg_mod
 
   ! Compute pressure for CFL and qsat removal
   call exner_wth%copy_field_properties(pressure)
-  inv_kappa = 1.0_r_def/kappa
   call invoke(setval_X(pressure,exner_wth),        &
-              inc_X_powreal_a(pressure,inv_kappa), &
+              inc_X_powreal_a(pressure,recip_kappa_def), &
               inc_a_times_X(p_zero,pressure))
 
 

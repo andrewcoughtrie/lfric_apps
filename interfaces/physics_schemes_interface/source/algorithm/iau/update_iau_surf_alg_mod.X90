@@ -20,9 +20,8 @@ module update_iau_surf_alg_mod
   use jules_control_init_mod,      only : n_land_tile
   use limit_soil_moist_kernel_mod, only : limit_soil_moist_kernel_type
   use surf_inc_update_kernel_mod,  only : surf_inc_update_kernel_type
-  use water_constants_mod,         only : rho_water
   use nlsizes_namelist_mod,        only : sm_levels
-  use driver_water_constants_mod,  only : T_freeze_h2o
+  use driver_water_constants_mod,  only : T_freeze_h2o, density_h2o
   use jules_control_init_mod,      only : n_land_tile
   use jules_physics_init_mod,      only : snow_lev_tile
   use jules_snow_mod,              only : nsmax
@@ -133,7 +132,7 @@ module update_iau_surf_alg_mod
                                                 soil_moist_sat,  &
                                                 soil_moisture,   &
                                                 sm_levels,       &
-                                                rho_water ) )
+                                                density_h2o ) )
 
     call log_event( '- Minmax surface fields after iau -', log_level_debug )
     call print_minmax_surf( soil_fields,    &

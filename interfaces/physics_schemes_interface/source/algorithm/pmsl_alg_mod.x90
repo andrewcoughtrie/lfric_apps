@@ -20,7 +20,8 @@ module pmsl_alg_mod
   use function_space_collection_mod, only: function_space_collection
   use mesh_mod,                only: mesh_type
   use initialise_diagnostics_mod, only: init_diag => init_diagnostic_field
-  use planet_constants_mod, only: recip_kappa, p_zero
+  use planet_constants_mod, only: recip_kappa_def
+  use planet_config_mod, only: p_zero
   use um_domain_init_mod, only: n_iter_pmsl
 
   implicit none
@@ -142,7 +143,7 @@ contains
       end do
 
       ! Convert exner to PMSL
-      call invoke(inc_X_powreal_a(exner_m, recip_kappa), &
+      call invoke(inc_X_powreal_a(exner_m, recip_kappa_def), &
                   a_times_X(pmsl, p_zero, exner_m) )
 
       ! Output diagnostic

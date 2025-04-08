@@ -21,7 +21,7 @@
 # dependent changes should be updated to the revision at which those
 # changes were committed to the project's trunk
 
-export lfric_core_rev=52400
+export lfric_core_rev=52465
 export lfric_core_sources=
 
 export casim_rev=apps2.1
@@ -30,7 +30,7 @@ export jules_rev=apps2.1
 export jules_sources=
 export shumlib_rev=apps2.1
 export shumlib_sources=
-export socrates_rev=apps2.1
+export socrates_rev=1769
 export socrates_sources=
 export ukca_rev=apps2.1
 export ukca_sources=

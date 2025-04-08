@@ -87,7 +87,7 @@ contains
     use psykal_lite_phys_mod, only: invoke_jules_exp_kernel_type
     use interp_bl_kernel_mod, only: interp_bl_kernel_type
     use bl_exp_du_kernel_mod, only: bl_exp_du_kernel_type
-    use planet_constants_mod, only: lcrcp, lsrcp
+    use planet_constants_mod, only: lcrcp_def, lsrcp_def
     use xios, only: xios_date, xios_get_current_date, xios_date_get_day_of_year
 
     implicit none
@@ -554,13 +554,13 @@ contains
 
                 ! Calculate TL = T - (lc/cp)*mcl
     call invoke(     X_times_Y(dtl_mphys, dtheta_mphys, exner_in_wth),         &
-                inc_X_minus_bY(dtl_mphys, lcrcp, dmr_mphys(imr_cl)),           &
+                inc_X_minus_bY(dtl_mphys, lcrcp_def, dmr_mphys(imr_cl)),       &
                 ! And mt = mv + mcl
                     X_plus_Y(dmt_mphys, dmr_mphys(imr_v), dmr_mphys(imr_cl)) )
     if (.not. l_noice_in_turb) then
       ! Add in ice increments
-      call invoke(inc_X_minus_bY(dtl_mphys, lsrcp, dmr_mphys(imr_s)),          &
-                  inc_X_minus_bY(dtl_mphys, lsrcp, dmr_mphys(imr_ci)),         &
+      call invoke(inc_X_minus_bY(dtl_mphys, lsrcp_def, dmr_mphys(imr_s)),      &
+                  inc_X_minus_bY(dtl_mphys, lsrcp_def, dmr_mphys(imr_ci)),     &
                   inc_X_plus_Y(dmt_mphys, dmr_mphys(imr_s)),                   &
                   inc_X_plus_Y(dmt_mphys, dmr_mphys(imr_ci)) )
     end if

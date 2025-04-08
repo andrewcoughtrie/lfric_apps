@@ -14,7 +14,7 @@ use argument_mod,  only : arg_type, CELL_COLUMN, &
                           ANY_DISCONTINUOUS_SPACE_1, &
                           ANY_DISCONTINUOUS_SPACE_2, &
                           ANY_DISCONTINUOUS_SPACE_3
-use constants_mod, only : r_def, i_def
+use constants_mod, only : r_def, i_def, pi
 use kernel_mod,    only : kernel_type
 
 implicit none
@@ -110,7 +110,7 @@ subroutine set_topography_code(nlayers, &
   h_asp_1 = map_h_asp(1)
   h_asp_last = map_h_asp(1) + max(n_horizon_angle - 1, 0)
 
-  call set_topography(n_profile, &
+  call set_topography(n_profile, pi, &
                       n_horiz_ang    = n_horizon_angle, &
                       n_horiz_layer  = n_horizon_layer, &
                       grad_x         = grad_x_orog(map_2d(1):map_2d(1)), &

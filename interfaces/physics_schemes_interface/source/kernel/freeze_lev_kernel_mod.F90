@@ -12,7 +12,7 @@ module freeze_lev_kernel_mod
                                   GH_READ, GH_WRITE,         &
                                   GH_REAL, CELL_COLUMN,      &
                                   ANY_DISCONTINUOUS_SPACE_1
-  use constants_mod,        only: r_def, i_def, l_def
+  use constants_mod,        only: r_def, i_def, l_def, r_um
   use fs_continuity_mod,    only: Wtheta
   use kernel_mod,           only: kernel_type
 
@@ -91,7 +91,7 @@ contains
     integer(kind=i_def), parameter :: seg_len = 1
     logical(kind=l_def), parameter :: l_potential = .false.
     logical(kind=l_def) :: freeze_lev_found
-    real(kind=r_def) :: temperature(seg_len), pressure(seg_len), qv(seg_len), &
+    real(kind=r_um) :: temperature(seg_len), pressure(seg_len), qv(seg_len), &
                         temperature_wb(nlayers), dz, frac
 
     k = 1

@@ -536,7 +536,7 @@ contains
     !-----------------------------------------------------------------------
     ! loop counters etc
     integer(i_def) :: i, i_tile, i_sice, n, l, m, land_field, ssi_pts,       &
-                      sice_pts, sea_pts
+                      sice_pts, sea_pts, k
 
     ! Fields which are not used and only required for subroutine argument list,
     ! hence are unset in the kernel
@@ -1007,13 +1007,10 @@ contains
       do l = 1, land_field
         do n = 1, n_land_tile
           alpha1(l, n) = alpha1_tile(map_tile(1,ainfo%land_index(l))+n-1)
-          ashtf_prime_surft(l, n) = ashtf_prime_tile(map_tile(1,ainfo%land_index(l))+n-1)
-          dtstar_surft(l, n) = dtstar_tile(map_tile(1,ainfo%land_index(l))+n-1)
           fracaero_t(l, n) = fracaero_t_tile(map_tile(1,ainfo%land_index(l))+n-1)
           fracaero_s(l, n) = fracaero_s_tile(map_tile(1,ainfo%land_index(l))+n-1)
           fluxes%z0h_surft(l, n) = z0h_tile(map_tile(1,ainfo%land_index(l))+n-1)
           fluxes%z0m_surft(l, n) = z0m_tile(map_tile(1,ainfo%land_index(l))+n-1)
-          rhokh_surft(l, n) = rhokh_tile(map_tile(1,ainfo%land_index(l))+n-1)
           chr1p5m(l, n) = chr1p5m_tile(map_tile(1,ainfo%land_index(l))+n-1)
           resfs(l, n) = resfs_tile(map_tile(1,ainfo%land_index(l))+n-1)
           canhc_surft(l, n) = canhc_tile(map_tile(1,ainfo%land_index(l))+n-1)
@@ -1028,38 +1025,65 @@ contains
         flake(l,:) = 0.0_r_um
         flake(l,lake) = 1.0_r_um
       end do
+      ! Fields only calculated on tiles which exist
+      do n = 1, n_land_tile
+        do m = 1, ainfo%surft_pts(n)
+          l = ainfo%surft_index(m,n)
+          ashtf_prime_surft(l, n) = ashtf_prime_tile(map_tile(1,ainfo%land_index(l))+n-1)
+          dtstar_surft(l, n) = dtstar_tile(map_tile(1,ainfo%land_index(l))+n-1)
+          rhokh_surft(l, n) = rhokh_tile(map_tile(1,ainfo%land_index(l))+n-1)
+        end do
+      end do
 
       if (emis_method_soil /= emis_method_soil_fixed) fluxes%l_emis_surft_set(soil)=.true.
 
-      do l = 1, land_field
-        i_tile = 0
-        do n = 1, n_land_tile
-          do m = 1, sm_levels
+      i_tile = 0
+      do n = 1, n_land_tile
+        do m = 1, sm_levels
+          do k = 1, ainfo%surft_pts(n)
+            l = ainfo%surft_index(k,n)
             wt_ext_surft(l,m,n) = tile_water_extract(map_smtile(1,ainfo%land_index(l))+i_tile)
-            i_tile = i_tile + 1
           end do
+          i_tile = i_tile + 1
         end do
       end do
 
       do i = 1, seg_len
         alpha1_sea(i,1) = alpha1_tile(map_tile(1,i)+first_sea_tile-1)
+      end do
+      ! This is only calculated on sea points
+      do l = 1, sea_pts
+        i = ainfo%sea_index(l)
         ashtf_prime_sea(i,1) = ashtf_prime_tile(map_tile(1,i)+first_sea_tile-1)
         dtstar_sea(i,1) = dtstar_tile(map_tile(1,i)+first_sea_tile-1)
-        rhokh_sea(i,1) = rhokh_tile(map_tile(1,i)+first_sea_tile-1)
       end do
+      ! This is only used with multi-category sea-ice
+      if (n_sea_ice_tile > 1) then
+        do i = 1, seg_len
+          rhokh_sea(i,1) = rhokh_tile(map_tile(1,i)+first_sea_tile-1)
+        end do
+      end if
 
       do i = 1, seg_len
         i_sice = 0
         do n = first_sea_ice_tile, first_sea_ice_tile + n_sea_ice_tile - 1
           i_sice = i_sice + 1
           alpha1_sice(i,1,i_sice) = alpha1_tile(map_tile(1,i)+n-1)
-          ashtf_prime(i,1,i_sice) = ashtf_prime_tile(map_tile(1,i)+n-1)
           rhokh_sice(i,1,i_sice) = rhokh_tile(map_tile(1,i)+n-1)
-          dtstar_sice(i,1,i_sice) = dtstar_tile(map_tile(1,i)+n-1)
         end do
         z0hssi(i,1) = z0h_tile(map_tile(1,i)+first_sea_ice_tile-1)
         z0mssi(i,1) = z0m_tile(map_tile(1,i)+first_sea_ice_tile-1)
         chr1p5m_sice(i,1) = chr1p5m_tile(map_tile(1,i)+first_sea_ice_tile-1)
+      end do
+      ! Fields are only written on sea-ice points
+      i_sice = 0
+      do n = first_sea_ice_tile, first_sea_ice_tile + n_sea_ice_tile - 1
+        i_sice = i_sice + 1
+        do l = 1, ainfo%sice_pts_ncat(i_sice)
+          i = ainfo%sice_index_ncat(l,i_sice)
+          ashtf_prime(i,1,i_sice) = ashtf_prime_tile(map_tile(1,i)+n-1)
+          dtstar_sice(i,1,i_sice) = dtstar_tile(map_tile(1,i)+n-1)
+        end do
       end do
 
       do i = 1, seg_len
@@ -1272,7 +1296,6 @@ contains
             tile_moisture_flux(map_tile(1,i)+n-1) = real(fluxes%fqw_sicat(i,1,i_sice), r_def)
             snowice_melt(map_tile(1,i)+n-1) = real(fluxes%sice_melt(i,1, i_sice), r_def)
             snowice_sublimation(map_tile(1,i)+n-1) = real(fluxes%ei_sice(i,1,i_sice), r_def)
-            canopy_evap(map_tile(1,i)+n-1) = 0.0_r_def
             ! Sum the fluxes over the sea-ice for use in sea point calculation
             tile_heat_flux(map_tile(1,i)+first_sea_tile-1) =                   &
                  tile_heat_flux(map_tile(1,i)+first_sea_tile-1)                &
@@ -1658,7 +1681,6 @@ contains
             tile_moisture_flux(map_tile(1,i)+first_sea_tile-1) = 0.0_r_def
           end if
           snowice_melt(map_tile(1,i)+first_sea_tile-1) = 0.0_r_def
-          canopy_evap(map_tile(1,i)+first_sea_tile-1) = 0.0_r_def
         end do
 
         if (.not. associated(latent_heat, empty_real_data) ) then

@@ -277,7 +277,8 @@ contains
             fs = field_ptr%which_function_space()
             if ( fs == W3 .or. fs == Wtheta ) then
               name = trim(adjustl( field_ptr%get_name() ))
-              call field_ptr%write_field(trim(name))
+              if (diagnostic_to_be_sampled(trim(name))) &
+                   call field_ptr%write_field(trim(name))
             end if
         end select
       end do

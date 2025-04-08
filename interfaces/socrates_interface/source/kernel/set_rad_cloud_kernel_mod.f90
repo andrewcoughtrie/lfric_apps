@@ -98,6 +98,14 @@ subroutine set_rad_cloud_code( nlayers, &
   ! Internal constants and variables
   integer(i_def) :: j, k
 
+  k = map_wtheta(1)
+  radiative_cloud_fraction(k) = 0.0_r_def
+  radiative_conv_fraction(k) = 0.0_r_def
+  conv_liquid_fraction(k) = 0.0_r_def
+  conv_frozen_fraction(k) = 0.0_r_def
+  conv_liquid_mmr(k) = 0.0_r_def
+  conv_frozen_mmr(k) = 0.0_r_def
+
   do j=1, nlayers
     k = map_wtheta(1) + j
     ! Squeeze large scale cloud into area not filled by convective cloud

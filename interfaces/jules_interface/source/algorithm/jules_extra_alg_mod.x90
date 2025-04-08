@@ -7,7 +7,7 @@
 
 module jules_extra_alg_mod
 
-  use constants_mod,                 only: i_def
+  use constants_mod,                 only: i_def, r_def
   use field_mod,                     only: field_type
   use integer_field_mod,             only: integer_field_type
   use field_collection_mod,          only: field_collection_type
@@ -50,10 +50,11 @@ contains
   !> @param[in]     canopy_evap         Canopy evaporation from land tiles (kg m-2 s-1)
   !> @param[in]     water_extraction    Extraction of water from each soil layer (kg m-2 s-1)
   !> @param[in]     lake_evap           Evaporation from lakes GBM
+  !> @param[in]     dt                  Timestep length (s)
   subroutine jules_extra_alg(microphysics_fields, convection_fields,      &
                              surface_fields, soil_fields, snow_fields,    &
                              surf_heat_flux,                              &
-                             canopy_evap, water_extraction, lake_evap)
+                             canopy_evap, water_extraction, lake_evap, dt)
 
     use jules_extra_kernel_mod, only: jules_extra_kernel_type
     use um_sizes_init_mod,      only: um_sizes_init
@@ -70,6 +71,7 @@ contains
     type( field_type ), intent (in) :: canopy_evap
     type( field_type ), intent (in) :: water_extraction
     type( field_type ), intent (in) :: lake_evap
+    real(r_def), intent(in) :: dt
 
     ! Temporary fields: unpacked fields from collections
     type( field_type ), pointer :: ls_rain                => null()
@@ -261,7 +263,7 @@ contains
     if ( lake_water_conservation ) then
       call lake_water_correction(lake_evap, soil_moisture,                     &
                                  unfrozen_soil_moisture, soil_moist_sat,       &
-                                 soil_moist_wilt, tile_fraction)
+                                 soil_moist_wilt, tile_fraction, dt)
     end if
 
     call um_sizes_init(1_i_def)

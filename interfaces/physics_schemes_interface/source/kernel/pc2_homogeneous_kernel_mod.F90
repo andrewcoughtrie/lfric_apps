@@ -206,7 +206,7 @@ subroutine pc2_homogeneous_code( nlayers,                    &
     ! Call to pc2_homog_plus_turb routine.
     call pc2_homog_plus_turb(pressure,           & ! Pressure related fields
                              model_levels,       & ! levels in the vertical
-                             dt,                 & ! Timestep
+                             real(dt,r_um),      & ! Timestep
                                                    ! Fields that get updated:
                              t_work,             & !   temperature
                              bcf_work,           & !   bulk cloud fraction

@@ -34,13 +34,13 @@ contains
   !> @param[in]     soil_moist_sat         Saturated soil moisture fraction (m3 m-3)
   !> @param[in]     soil_moist_wilt        Wilting point soil moisture fraction (m3 m-3)
   !> @param[in]     tile_fraction          The fraction of each surface tile
+  !> @param[in]     dt                     Timestep length (s)
   subroutine lake_water_correction(lake_evap, soil_moisture,                 &
                                    unfrozen_soil_moisture, soil_moist_sat,   &
-                                   soil_moist_wilt, tile_fraction)
+                                   soil_moist_wilt, tile_fraction, dt)
 
     use sci_geometric_constants_mod, only: get_da_msl_proj
     use nlsizes_namelist_mod,        only: sm_levels
-    use timestep_mod, only: timestep
     use log_mod,                     only: log_event,                          &
                                            log_scratch_space,                  &
                                            log_level,                          &
@@ -62,6 +62,7 @@ contains
     type( field_type ), intent (in)     :: soil_moist_sat
     type( field_type ), intent (in)     :: soil_moist_wilt
     type( field_type ), intent (in)     :: tile_fraction
+    real(r_def), intent(in) :: dt
 
     ! Local variables
     ! Field pointers
@@ -122,7 +123,7 @@ contains
                 sum_X(global_evap_rate, evap_whole_grid_cell))
 
     ! Multiply by the length of the timestep to get total amount of water
-    global_evap_total = global_evap_rate * timestep
+    global_evap_total = global_evap_rate * dt
 
 
     call invoke(                                                                    &
@@ -197,7 +198,7 @@ contains
                   X_minus_Y(soilm_change_lakes, soilm_end, soilm_init),             &
 
                   ! Divide by the timestep to get the change per second
-                  inc_X_divideby_a(soilm_change_lakes, timestep))
+                  inc_X_divideby_a(soilm_change_lakes, dt))
 
       call soilm_change_lakes%write_field(soilm_change_lakes%get_name())
     end if

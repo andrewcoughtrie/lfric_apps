@@ -15,7 +15,7 @@ module tropopause_limits_kernel_mod
                                 GH_READ,      &
                                 CELL_COLUMN,  &
                                 ANY_DISCONTINUOUS_SPACE_1
-  use constants_mod,     only : r_def, i_def, r_um
+  use constants_mod,     only : r_def, i_def
   use fs_continuity_mod, only : WTHETA
   use kernel_mod,        only : kernel_type
   use qsat_mod,          only : qsat_mix
@@ -114,7 +114,7 @@ contains
       real(kind=r_def), parameter :: trop_min_rh = 0.01_r_def
 
       !UM definition for qsat capping
-      real(kind=r_um) :: msat_out
+      real(kind=r_def) :: msat_out
 
       ! Level of tropopause
       i_trop = trop_level(map_2d(1))

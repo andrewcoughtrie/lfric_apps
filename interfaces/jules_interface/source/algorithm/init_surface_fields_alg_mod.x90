@@ -6,7 +6,7 @@
 !>@brief Prepares the surface fields
 module init_surface_fields_alg_mod
 
-  use constants_mod,                   only: r_def, i_def
+  use constants_mod,                   only: r_def, i_def, rmdi
 
   ! Derived Types
   use field_mod,                 only: field_type
@@ -39,7 +39,6 @@ contains
 
     use initial_surface_kernel_mod, only: initial_surface_kernel_type
     use process_urban_kernel_mod,   only: process_urban_kernel_type
-    use missing_data_mod,           only: rmdi
 
     implicit none
 
@@ -82,6 +81,8 @@ contains
     type( field_type ), pointer :: surface_conductance => null()
     type( field_type ), pointer :: canopy_water        => null()
     type( field_type ), pointer :: snowice_sublimation
+    type( field_type ), pointer :: snowice_melt
+    type( field_type ), pointer :: z0m_tile
     type( field_type ), pointer :: sea_ice_conductivity => null()
     type( field_type ), pointer :: melt_pond_fraction  => null()
     type( field_type ), pointer :: melt_pond_depth     => null()
@@ -115,6 +116,8 @@ contains
     call surface_fields%get_field('surface_conductance', surface_conductance)
     call surface_fields%get_field('canopy_water', canopy_water)
     call surface_fields%get_field('snowice_sublimation', snowice_sublimation)
+    call surface_fields%get_field('snowice_melt', snowice_melt)
+    call surface_fields%get_field('z0m_tile', z0m_tile)
     call surface_fields%get_field('sea_ice_conductivity', sea_ice_conductivity)
     call surface_fields%get_field('melt_pond_fraction', melt_pond_fraction)
     call surface_fields%get_field('melt_pond_depth', melt_pond_depth)
@@ -137,6 +140,8 @@ contains
                  setval_c(surface_conductance, 0.01_r_def),                   &
                  setval_c(canopy_water,        0.0_r_def),                    &
                  setval_c(snowice_sublimation, 0.0_r_def),                    &
+                 setval_c(snowice_melt,        0.0_r_def),                    &
+                 setval_c(z0m_tile,            0.0_r_def),                    &
                  setval_c(tile_heat_flux,      0.0_r_def),                    &
                  setval_c(tile_moisture_flux,  0.0_r_def),                    &
                  setval_c(net_prim_prod,       0.0_r_def),                    &
