@@ -53,6 +53,8 @@ use jules_surface_mod, only: fd_stability_dep, orog_drag_param, use_bulk_ri,   &
                              fd_hill_option, steep_hill, low_hill,             &
                              capped_lowhill
 use planet_constants_mod, only: vkman => vkman_bl, grcp => grcp_bl, g => g_bl
+use stochastic_physics_run_mod, only: l_rp2, orog_drag_param_rp, rp_idx,       &
+                                      i_rp_scheme, i_rp2b
 use yomhook, only: lhook, dr_hook
 use parkind1, only: jprb, jpim
 implicit none
@@ -228,6 +230,10 @@ real(kind=jprb)               :: zhook_handle
 character(len=*), parameter :: RoutineName='FM_DRAG'
 
 if (lhook) call dr_hook(ModuleName//':'//RoutineName,zhook_in,zhook_handle)
+
+if ( l_rp2 .and. i_rp_scheme == i_rp2b ) then
+  orog_drag_param = orog_drag_param_rp(rp_idx)
+end if
 
 !------------------------------------------------------------------
 ! 0. Set stresses to zero

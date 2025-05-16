@@ -36,6 +36,9 @@ use mphys_ice_mod,         only: rhoi
 use lsp_dif_mod,           only: air_conductivity0, air_diffusivity0, tcor1,   &
                                  tcor2, cpwr
 
+! Stochastic physics
+use stochastic_physics_run_mod, only:  l_rp2, rp_idx, mp_czero_rp
+
 ! General and constants modules
 use gen_phys_inputs_mod,   only: l_mr_physics
 use conversions_mod,       only: pi, zerodegc
@@ -351,6 +354,11 @@ if (lhook) call dr_hook(ModuleName//':'//RoutineName,zhook_in,zhook_handle)
 !=============================================================================
 ! START OF PHYSICS
 !=============================================================================
+
+! If RP scheme is in use, set parameters to their perturbed values
+if ( l_rp2 ) then
+  mp_czero = mp_czero_rp(rp_idx)
+end if
 
 ! Set the temperature and saturated ice water limits
 t_limit = zerodegc - 0.01

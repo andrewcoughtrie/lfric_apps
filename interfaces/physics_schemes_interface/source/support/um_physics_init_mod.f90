@@ -217,13 +217,37 @@ module um_physics_init_mod
                                            rp_cycle_out,                       &
                                            rp_cycle_tm,                        &
                                            rp_decorr_ts,                       &
+                                           rp_lsfc_alnir_max,                  &
+                                           rp_lsfc_alnir_min,                  &
+                                           rp_lsfc_alnir,                      &
+                                           rp_lsfc_alpar_max,                  &
+                                           rp_lsfc_alpar_min,                  &
+                                           rp_lsfc_alpar,                      &
                                            rp_lsfc_lai_mult_max,               &
                                            rp_lsfc_lai_mult_min,               &
                                            rp_lsfc_lai_mult,                   &
+                                           rp_lsfc_orog_drag_param,            &
+                                           rp_lsfc_omnir_max,                  &
+                                           rp_lsfc_omnir_min,                  &
+                                           rp_lsfc_omnir,                      &
+                                           rp_lsfc_omega_max,                  &
+                                           rp_lsfc_omega_min,                  &
+                                           rp_lsfc_omega,                      &
+                                           rp_lsfc_z0_soil,                    &
+                                           rp_lsfc_z0_urban_mult,              &
                                            rp_lsfc_z0hm_pft_max,               &
                                            rp_lsfc_z0hm_pft_min,               &
                                            rp_lsfc_z0hm_pft,                   &
+                                           rp_lsfc_z0hm_soil,                  &
+                                           rp_lsfc_z0v_max,                    &
+                                           rp_lsfc_z0v_min,                    &
+                                           rp_lsfc_z0v,                        &
+                                           rp_mp_ice_fspd,                     &
+                                           rp_mp_fxd_cld_num,                  &
+                                           rp_mp_mp_czero,                     &
+                                           rp_mp_mpof,                         &
                                            rp_mp_ndrop_surf,                   &
+                                           rp_mp_snow_fspd,                    &
                                            rp_ran_max
 
   use orographic_drag_config_mod, only:  include_moisture,          &
@@ -417,6 +441,7 @@ contains
                               casim_moments_option, n_casim_tracers,     &
                               l_casim_warm_only,                         &
                               l_ukca_aerosol, no_aerosol_modes
+    use casim_stph, only: l_rp2_casim
     use casim_set_dependent_switches_mod, only:                                &
           casim_set_dependent_switches,                                        &
           casim_print_dependent_switches
@@ -431,19 +456,20 @@ contains
          forced_cu_cca, i_pc2_homog_g_width, pc2init_logic_smooth
     use rad_input_mod, only: two_d_fsd_factor
     use science_fixes_mod, only:  i_fix_mphys_drop_settle, second_fix,      &
-                                  l_pc2_homog_turb_q_neg, l_fix_ccb_cct, l_fix_conv_precip_evap,     &
+         l_pc2_homog_turb_q_neg, l_fix_ccb_cct, l_fix_conv_precip_evap,     &
          l_fix_dyndiag, l_fix_pc2_cnv_mix_phase, l_fix_riming,              &
          l_fix_tidy_rainfracs, l_fix_zh, l_fix_incloud_qcf,                 &
          l_fix_mcr_frac_ice, l_fix_gr_autoc, l_improve_cv_cons,             &
          l_pc2_checks_sdfix
     use solinc_data, only: l_skyview
     use stochastic_physics_run_mod, only: a_ent_1_rp, a_ent_shr_rp,         &
-         a_ent_shr_rp_max, cbl_mix_fac_rp, cs_rp, g0_rp, g1_rp,             &
-         i_rp_scheme, l_rp2, l_rp2_cycle_in, l_rp2_cycle_out,               &
-         lai_mult_rp_max, lai_mult_rp_min, lambda_min_rp, ndrop_surf_rp,    &
-         lai_mult_rp, par_mezcla_rp, ran_max, ricrit_rp, rp2_callfreq,      &
-         rp2_cycle_tm, rp2_decorr_ts, rp_max_idx, rp_min_idx,               &
-         z0hm_pft_rp, z0hm_pft_rp_max, z0hm_pft_rp_min
+         a_ent_shr_rp_max, alnir_rp, alpar_rp, cbl_mix_fac_rp, cs_rp,       &
+         fxd_cld_num_rp, g0_rp, g1_rp, ice_fspd_rp, i_rp_scheme, l_rp2,     &
+         l_rp2_cycle_in, l_rp2_cycle_out, lai_mult_rp, lambda_min_rp,       &
+         mp_czero_rp, mpof_rp, ndrop_surf_rp, omega_rp, omnir_rp,           &
+         orog_drag_param_rp, par_mezcla_rp, ran_max, ricrit_rp,             &
+         rp2_callfreq, rp2_cycle_tm, rp2_decorr_ts, snow_fspd_rp,           &
+         z0_soil_rp, z0_urban_mult_rp, z0hm_soil_rp, z0hm_pft_rp, z0v_rp
     use turb_diff_mod, only: l_subfilter_horiz, l_subfilter_vert, &
                              mix_factor, turb_startlev_vert,      &
                              turb_endlev_vert, l_leonard_term
@@ -1303,6 +1329,9 @@ contains
         ! (already default for Wilson and Ballard microphysics)
         l_abelshipway = .false.
 
+        ! Set up stochastic physics options
+        l_rp2_casim = l_rp2
+        
         ! Set up options for CASIM cloud fraction scheme
         l_cfrac_casim_diag_scheme = .false.
 
@@ -1533,17 +1562,31 @@ contains
       a_ent_shr_rp_max = rp_bl_a_ent_shr_max
       cbl_mix_fac_rp = rp_bl_cbl_mix_fac
       cs_rp = rp_bl_smag_coef
+      fxd_cld_num_rp = rp_mp_fxd_cld_num
       g0_rp = rp_bl_stable_ri_coef
       g1_rp = rp_bl_cld_top_diffusion
+      ice_fspd_rp = rp_mp_ice_fspd
       lambda_min_rp = rp_bl_min_mix_length
+      mp_czero_rp = rp_mp_mp_czero
+      mpof_rp = rp_mp_mpof
       ndrop_surf_rp = rp_mp_ndrop_surf
+      orog_drag_param_rp = rp_lsfc_orog_drag_param
       par_mezcla_rp = rp_bl_neutral_mix_length
       ricrit_rp = rp_bl_ricrit
+      snow_fspd_rp = rp_mp_snow_fspd
+      z0_soil_rp = rp_lsfc_z0_soil
+      z0_urban_mult_rp = rp_lsfc_z0_urban_mult
+      z0hm_soil_rp = rp_lsfc_z0hm_soil
 
       n_pft = size(rp_lsfc_z0hm_pft)
       do n = 1, n_pft
-        lai_mult_rp(n) = rp_lsfc_lai_mult(n)
+        alnir_rp(n) = rp_lsfc_alnir(n)
+        alpar_rp(n) = rp_lsfc_alpar(n)
+        lai_mult_rp(n) = rp_lsfc_lai_mult
+        omega_rp(n) = rp_lsfc_omega(n)
+        omnir_rp(n) = rp_lsfc_omnir(n)
         z0hm_pft_rp(n) = rp_lsfc_z0hm_pft(n)
+        z0v_rp(n) = rp_lsfc_z0v(n)
       end do
 
     end if ! if ( stochastic_physics == stochastic_physics_um ) then

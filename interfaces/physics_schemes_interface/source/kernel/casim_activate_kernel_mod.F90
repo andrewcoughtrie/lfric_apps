@@ -66,6 +66,7 @@ contains
     use mphys_constants,      only: fixed_cloud_number
     use mphys_constants_mod,  only: min_drop_casim
     use thresholds,           only: ql_tidy
+    use stochastic_physics_run_mod, only: l_rp2, ndrop_surf_rp, rp_idx
 
     implicit none
 
@@ -86,7 +87,14 @@ contains
 
     real(r_def), parameter :: upw_tap_strt = 2000.0_r_def !m
     real(r_def), parameter :: refoldlen    = 0.0004_r_def !m^-1
+    real(r_def) :: ndrop_surf_local   ! local copy, potentially varying
 
+    ! First update value of ndrop_surf if RP scheme is switched on
+    if ( l_rp2 ) then
+      ndrop_surf_local = ndrop_surf_rp(rp_idx)
+    else
+      ndrop_surf_local = ndrop_surf
+    end if
     ! Taper curves are switched on
     if (droplet_tpr) then
       do k = 1, nlayers
@@ -94,8 +102,8 @@ contains
           nl_mphys( map_wth(1) + k) = fixed_cloud_number * cf_liq(map_wth(1) + k)
           ! Tapering towards the surface
           if (height_wth(map_wth(1)+k) - height_wth(map_wth(1)+1) < z_surf) then
-            nl_mphys(map_wth(1)+k) = ndrop_surf + &
-                 (nl_mphys(map_wth(1)+k) - ndrop_surf) * &
+            nl_mphys(map_wth(1)+k) = ndrop_surf_local + &
+                 (nl_mphys(map_wth(1)+k) - ndrop_surf_local) * &
                  (height_wth(map_wth(1)+k) - height_wth(map_wth(1)+1)) / z_surf
           end if
           ! Tapering upwards
