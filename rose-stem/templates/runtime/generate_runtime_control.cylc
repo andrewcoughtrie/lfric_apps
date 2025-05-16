@@ -9,13 +9,16 @@
 {# export_source and housekeeping for now #}
 {# gatekeeper tasks will potentially be added here if required #}
 
+    [[CONTROL_TASK_RETRIES]]
+        execution retry delays = 3*PT3M
+
 {% if task == "export-source" %}
 {# First export-source task. Runs locally to the launch platform #}
 {# Exports the lfric_core and lfric_apps sources to the #}
 {# cylc-run/share/source directory #}
 
     [[{{task}}]]
-        inherit = EXPORT-SOURCE, {{SITE|upper}}_ORIG
+        inherit = EXPORT-SOURCE, {{SITE|upper}}_ORIG, CONTROL_TASK_RETRIES
         script  = "rose task-run --app-key=export_source"
         [[[environment]]]
             SOURCE_DIRECTORY = $SOURCE_ROOT
@@ -35,7 +38,7 @@
     {% set platform = task.split('_')[1] %}
 
     [[{{task}}]]
-        inherit = EXPORT-SOURCE, {{platform|upper}}_EXPORT-SOURCE
+        inherit = EXPORT-SOURCE, {{platform|upper}}_EXPORT-SOURCE, CONTROL_TASK_RETRIES
         script  = """
                   if [[ "$PLATFORM_SYNC" = true ]] ; then
                     RELATIVE_SOURCE_DIRECTORY=`echo $SOURCE_DIRECTORY | sed "s|$HOME/||"`
@@ -58,7 +61,7 @@
     {% set platform = task.split('_')[1] %}
 
     [[{{task}}]]
-        inherit = GENERATE_WEIGHTS, {{platform|upper}}_EXPORT-SOURCE
+        inherit = GENERATE_WEIGHTS, {{platform|upper}}_EXPORT-SOURCE, CONTROL_TASK_RETRIES
 
     {% if platform == site_vars["scripts_platform"] %}
         script=echo "Running on weight generation platform - nothing to do"
@@ -84,7 +87,7 @@
     {% set platform = task.split('_')[1] %}
 
     [[{{task}}]]
-        inherit = EXPORT-SOURCE, {{platform|upper}}_BASE
+        inherit = EXPORT-SOURCE, {{platform|upper}}_BASE, CONTROL_TASK_RETRIES
         script = true
         execution time limit = PT1M
 
