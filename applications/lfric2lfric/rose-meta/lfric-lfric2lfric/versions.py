@@ -329,7 +329,6 @@ class vn21_t4604(MacroUpgrade):
             ["namelist:partitioning", "generate_inner_haloes"],
             ["namelist:partitioning", "generate_inner_halos"],
         )
-
         # Commands From: rose-meta/lfric-lfric2lfric
         """Rename generate_inner_haloes to generate_inner_halos"""
         self.rename_setting(
@@ -342,7 +341,6 @@ class vn21_t4604(MacroUpgrade):
             ["namelist:partitioning(source)", "generate_inner_haloes"],
             ["namelist:partitioning(source)", "generate_inner_halos"],
         )
-
         return config, self.reports
 
 
@@ -375,7 +373,6 @@ class vn21_t208(MacroUpgrade):
                 ["namelist:boundaries", "transport_overwrite_freq"],
                 "'final'",
             )
-
         return config, self.reports
 
 
