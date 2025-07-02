@@ -754,7 +754,8 @@ contains
     call processor%apply(make_spec('rh_crit', main%cloud, Wtheta))
     call processor%apply(make_spec('departure_exner_wth', main%cloud, Wtheta,   &
         adv_coll=if_adv(advection_flag, adv%last_adv)))
-    call processor%apply(make_spec('sigma_mc', main%cloud, Wtheta))
+    call processor%apply(make_spec('sigma_ml', main%cloud, Wtheta))
+    call processor%apply(make_spec('sigma_mi', main%cloud, Wtheta))
 
     ! Fields for bimodal cloud scheme
     call processor%apply(make_spec('tau_dec_bm', main%cloud, Wtheta))

@@ -44,5 +44,21 @@ class vn21_t657(MacroUpgrade):
         self.remove_setting(config, [nml, "fsd_nonconv_const"])
         self.add_setting(config, [nml, "fsd_nonconv_ice_const"], fsd_nonconv)
         self.add_setting(config, [nml, "fsd_nonconv_liq_const"], fsd_nonconv)
+        return config, self.reports
+
+
+class vn21_t744(MacroUpgrade):
+    """Upgrade macro for ticket #744 by Ian Boutle."""
+
+    BEFORE_TAG = "vn2.1_t657"
+    AFTER_TAG = "vn2.1_t744"
+
+    def upgrade(self, config, meta_config=None):
+        # Commands From: rose-meta/um-cloud
+        nml = "namelist:cloud"
+        liq_fsd = self.get_setting_value(config, [nml, "cloud_horizontal_fsd"])
+        self.remove_setting(config, [nml, "cloud_horizontal_fsd"])
+        self.add_setting(config, [nml, "cloud_horizontal_liq_fsd"], liq_fsd)
+        self.add_setting(config, [nml, "cloud_horizontal_ice_fsd"], "0.0")
 
         return config, self.reports

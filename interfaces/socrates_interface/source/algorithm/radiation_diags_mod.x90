@@ -383,8 +383,8 @@ subroutine output_diags_for_radiation( dtheta_rad, &
   radiative_cloud_fraction, liquid_fraction, frozen_fraction, &
   mcl, mci, n_ice, cloud_drop_no_conc, &
   radiative_conv_fraction, conv_liquid_fraction, conv_frozen_fraction, &
-  conv_liquid_mmr, conv_frozen_mmr, sigma_mc, rand_seed, &
-  layer_heat_capacity, sulphuric, &
+  conv_liquid_mmr, conv_frozen_mmr, conv_frozen_number, sigma_ml, &
+  sigma_mi, rand_seed, layer_heat_capacity, sulphuric, &
   lw_up_surf, sw_up_surf, lw_up_toa, sw_up_toa, sw_direct_toa, &
   sw_direct_rts, sw_down_rts, sw_up_rts, lw_down_rts, lw_up_rts, &
   sw_direct_band_rts, sw_down_band_rts, sw_up_band_rts, &
@@ -441,8 +441,8 @@ subroutine output_diags_for_radiation( dtheta_rad, &
     radiative_cloud_fraction, liquid_fraction, frozen_fraction, &
     mcl, mci, n_ice, cloud_drop_no_conc, &
     radiative_conv_fraction, conv_liquid_fraction, conv_frozen_fraction, &
-    conv_liquid_mmr, conv_frozen_mmr, sigma_mc, &
-    layer_heat_capacity, sulphuric
+    conv_liquid_mmr, conv_frozen_mmr, conv_frozen_number, sigma_ml, &
+    sigma_mi, layer_heat_capacity, sulphuric
   type( integer_field_type ), intent(in) :: rand_seed
 
   ! Diagnostic fields that are always required by the kernels
@@ -579,7 +579,10 @@ subroutine output_diags_for_radiation( dtheta_rad, &
   call conv_frozen_fraction%write_field('radiation__conv_frozen_fraction_radinput')
   call conv_liquid_mmr%write_field('radiation__conv_liquid_mmr_radinput')
   call conv_frozen_mmr%write_field('radiation__conv_frozen_mmr_radinput')
-  call sigma_mc%write_field('radiation__sigma_condensate_radinput')
+  if (diagnostic_to_be_sampled('radiation__conv_frozen_number_radinput')) &
+       call conv_frozen_number%write_field('radiation__conv_frozen_number_radinput')
+  call sigma_ml%write_field('radiation__liquid_rsd_radinput')
+  call sigma_mi%write_field('radiation__frozen_rsd_radinput')
 
   if (diagnostic_to_be_sampled('radiation__layer_heat_capacity_radinput')) &
        call layer_heat_capacity%write_field('radiation__layer_heat_capacity_radinput')

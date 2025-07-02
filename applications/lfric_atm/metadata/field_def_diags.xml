@@ -268,7 +268,8 @@
   <field id="cloud__sskew_bm" name="sskew_bm" long_name="skewness_of_bimodal_sd_pdf" unit="1" grid_ref="full_level_face_grid" />
   <field id="cloud__svar_bm" name="svar_bm" long_name="variance_of_bimodal_sd_pdf" unit="kg2 kg-2" grid_ref="full_level_face_grid" />
   <field id="cloud__svar_tb" name="svar_tb" long_name="variance_of_unimodal_sd_pdf" unit="kg2 kg-2" grid_ref="full_level_face_grid" />
-  <field id="cloud__sigma_mc" name="sigma_mc" long_name="variability_cloud_condensate" unit="1" grid_ref="full_level_face_grid" />
+  <field id="cloud__sigma_ml" name="sigma_ml" long_name="variability_liquid_cloud_condensate" unit="1" grid_ref="full_level_face_grid" />
+  <field id="cloud__sigma_mi" name="sigma_mi" long_name="variability_ice_cloud_condensate" unit="1" grid_ref="full_level_face_grid" />
   <field id="cloud__dtheta_pc2_rad" name="dtheta_pc2_rad" long_name="tendency_of_air_potential_temperature_due_to_pc2_response_to_radiative_heating" unit="K" grid_ref="full_level_face_grid" />
   <field id="cloud__dt_pc2_rad" name="dt_pc2_rad" long_name="tendency_of_air_temperature_due_to_pc2_response_to_radiative_heating" unit="K" grid_ref="full_level_face_grid">cloud__dtheta_pc2_rad * exner_wth_n</field>
   <field id="cloud__dtheta_pc2_checks" name="dtheta_pc2_checks" long_name="tendency_of_air_potential_temperature_due_to_pc2_checks" unit="K" grid_ref="full_level_face_grid" />
@@ -824,7 +825,9 @@
   <field id="radiation__conv_frozen_fraction_radinput" name="conv_frozen_fraction_radinput" long_name="convective_cloud_frozen_fraction_in_radiation_layers" unit="1" grid_ref="full_level_face_grid" />
   <field id="radiation__conv_liquid_mmr_radinput" name="conv_liquid_mmr_radinput" long_name="convective_cloud_liquid_mass_mixing_ratio_in_radiation_layers" unit="kg kg-1" grid_ref="full_level_face_grid" />
   <field id="radiation__conv_frozen_mmr_radinput" name="conv_frozen_mmr_radinput" long_name="convective_cloud_frozen_mass_mixing_ratio_in_radiation_layers" unit="kg kg-1" grid_ref="full_level_face_grid" />
-  <field id="radiation__sigma_condensate_radinput" name="sigma_condensate_radinput" long_name="relative_standard_deviation_of_condensate_mmr_in_radiation_layers" unit="1" grid_ref="full_level_face_grid" />
+  <field id="radiation__conv_frozen_number_radinput" name="conv_frozen_number_radinput" long_name="convective_cloud_frozen_number_concentration_in_radiation_layers" unit="m-3" grid_ref="full_level_face_grid" />
+  <field id="radiation__liquid_rsd_radinput" name="liquid_rsd_radinput" long_name="relative_standard_deviation_of_liquid_condensate_mmr_in_radiation_layers" unit="1" grid_ref="full_level_face_grid" />
+  <field id="radiation__frozen_rsd_radinput" name="frozen_rsd_radinput" long_name="relative_standard_deviation_of_frozen_condensate_mmr_in_radiation_layers" unit="1" grid_ref="full_level_face_grid" />
   <field id="radiation__rand_seed_real_radinput" name="rand_seed_real_radinput" long_name="random_seed_for_subgrid_cloud_generator" unit="1" domain_ref="face" />
   <field id="radiation__layer_heat_capacity_radinput" name="layer_heat_capacity_radinput" long_name="heat_capacity_of_total_mass_in_radiation_layers" unit="J m-2 K-1" grid_ref="full_level_face_grid" />
   <field id="radiation__sulphuric_aerosol_radinput" name="sulphuric_aerosol_radinput" long_name="sulphuric_aerosol_mass_mixing_ratio_in_radiation_layers" unit="m2/kg" grid_ref="full_level_face_grid" />

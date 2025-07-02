@@ -52,13 +52,14 @@ contains
 !> @param[in]     conv_frozen_fraction     Convective frozen cloud fraction
 !> @param[in]     conv_liquid_mmr          Convective liquid gridbox MMR
 !> @param[in]     conv_frozen_mmr          Convective frozen gridbox MMR
+!> @param[in]     conv_frozen_number       Convective frozen number conc
 subroutine cosp_alg(pressure_in_wth, temperature_in_wth, exner, mr, &
                     derived_fields, radiation_fields, cloud_fields, &
                     aerosol_fields, convection_fields, microphysics_fields, &
                     rand_seed, n_cloud_layer, &
                     radiative_cloud_fraction, radiative_conv_fraction, &
                     conv_liquid_fraction, conv_frozen_fraction, &
-                    conv_liquid_mmr, conv_frozen_mmr)
+                    conv_liquid_mmr, conv_frozen_mmr, conv_frozen_number)
 
   implicit none
 
@@ -81,6 +82,7 @@ subroutine cosp_alg(pressure_in_wth, temperature_in_wth, exner, mr, &
   type( field_type ), intent(in) :: conv_frozen_fraction
   type( field_type ), intent(in) :: conv_liquid_mmr
   type( field_type ), intent(in) :: conv_frozen_mmr
+  type( field_type ), intent(in) :: conv_frozen_number
 
   ! Local variables
   type(mesh_type), pointer :: mesh => null()
@@ -93,7 +95,8 @@ subroutine cosp_alg(pressure_in_wth, temperature_in_wth, exner, mr, &
   type( field_type ), pointer :: lit_fraction        => null()
   type( field_type ), pointer :: liquid_fraction     => null()
   type( field_type ), pointer :: frozen_fraction     => null()
-  type( field_type ), pointer :: sigma_mc            => null()
+  type( field_type ), pointer :: sigma_ml
+  type( field_type ), pointer :: sigma_mi
   type( field_type ), pointer :: cloud_drop_no_conc  => null()
   type( field_type ), pointer :: ls_rain_3d          => null()
   type( field_type ), pointer :: ni_mphys
@@ -128,7 +131,8 @@ subroutine cosp_alg(pressure_in_wth, temperature_in_wth, exner, mr, &
 
   call cloud_fields%get_field('liquid_fraction', liquid_fraction)
   call cloud_fields%get_field('frozen_fraction', frozen_fraction)
-  call cloud_fields%get_field('sigma_mc', sigma_mc)
+  call cloud_fields%get_field('sigma_ml', sigma_ml)
+  call cloud_fields%get_field('sigma_mi', sigma_mi)
 
   call aerosol_fields%get_field('cloud_drop_no_conc', cloud_drop_no_conc)
 
@@ -194,8 +198,8 @@ subroutine cosp_alg(pressure_in_wth, temperature_in_wth, exner, mr, &
     liquid_fraction, frozen_fraction, &
     radiative_conv_fraction, &
     conv_liquid_fraction, conv_frozen_fraction, &
-    conv_liquid_mmr, conv_frozen_mmr, &
-    sigma_mc, cloud_drop_no_conc, &
+    conv_liquid_mmr, conv_frozen_mmr, conv_frozen_number, &
+    sigma_ml, sigma_mi, cloud_drop_no_conc, &
     ls_rain_3d, conv_rain_3d, conv_snow_3d, &
     lit_fraction, rand_seed, n_cloud_layer, &
     n_subcol_gen, &

@@ -16,6 +16,9 @@
         "lfric_atm": {
             "build_wallclock": 45,
         },
+        "jules": {
+            "build_wallclock": 35,
+        },
         "ngarch": {
             "build_wallclock": 45,
         },

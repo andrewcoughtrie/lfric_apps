@@ -265,7 +265,7 @@ contains
     type( integer_field_type ) :: rand_seed, n_cloud_layer
     type( field_type ) :: radiative_cloud_fraction, radiative_conv_fraction
     type( field_type ) :: conv_liquid_fraction, conv_frozen_fraction
-    type( field_type ) :: conv_liquid_mmr, conv_frozen_mmr
+    type( field_type ) :: conv_liquid_mmr, conv_frozen_mmr, conv_frozen_number
     ! ...for JULES & Boundary Layer
     type( field_type ) :: recip_l_mo_sea, rhostar, h_blend_orog
     type( field_type ) :: t1_sd_2d, q1_sd_2d
@@ -632,8 +632,8 @@ contains
                          radiative_cloud_fraction, radiative_conv_fraction, &
                          conv_liquid_fraction, conv_frozen_fraction, &
                          conv_liquid_mmr, conv_frozen_mmr, &
-                         temperature_in_wth, &
-                         cloud_fields, convection_fields, &
+                         conv_frozen_number, temperature_in_wth, theta, &
+                         cloud_fields, convection_fields, derived_fields, &
                          rad_this_tstep, rad_inc_this_tstep, &
                          cosp_this_tstep, twod_mesh)
 
@@ -719,7 +719,8 @@ contains
                           rand_seed, n_cloud_layer,                            &
                           radiative_cloud_fraction, radiative_conv_fraction,   &
                           conv_liquid_fraction, conv_frozen_fraction,          &
-                          conv_liquid_mmr, conv_frozen_mmr, dt )
+                          conv_liquid_mmr, conv_frozen_mmr, conv_frozen_number,&
+                          dt)
       radiation_done = .true. ! Collect this increment later on
       call tile_lw_albedo%field_final()
       call tile_lwinc_albedo%field_final()
@@ -759,7 +760,7 @@ contains
                       rand_seed, n_cloud_layer, &
                       radiative_cloud_fraction, radiative_conv_fraction, &
                       conv_liquid_fraction, conv_frozen_fraction, &
-                      conv_liquid_mmr, conv_frozen_mmr)
+                      conv_liquid_mmr, conv_frozen_mmr, conv_frozen_number)
       end if
 
       call pressure_in_wth%field_final()
@@ -772,6 +773,7 @@ contains
       call conv_frozen_fraction%field_final()
       call conv_liquid_mmr%field_final()
       call conv_frozen_mmr%field_final()
+      call conv_frozen_number%field_final()
 
     end if
 

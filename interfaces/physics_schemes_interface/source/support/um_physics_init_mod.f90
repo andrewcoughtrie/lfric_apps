@@ -1066,6 +1066,11 @@ contains
         i_bm_ez_opt = i_bm_ez_entpar
       END SELECT
 
+      ! Used by radiation to determine convective cloud, so potentially needed
+      ! with any cloud scheme
+      allicetdegc                  = -20.0_r_um
+      starticetkelvin              = 263.15_r_um
+
       ! Options which are bespoke to the choice of scheme
       select case (scheme)
 
@@ -1076,7 +1081,6 @@ contains
 
       case(scheme_pc2)
         i_cld_vn                     = i_cld_pc2
-        allicetdegc                  = -20.0_r_um
         dbsdtbs_turb_0               = 1.50e-4_r_um
         if (cv_scheme == cv_scheme_comorph) then
           forced_cu = forced_cu_cca
@@ -1099,7 +1103,6 @@ contains
           case(pc2_init_logic_smooth)
             i_pc2_init_logic = pc2init_logic_smooth
         end select
-        starticetkelvin              = 263.15_r_um
         if (pc2ini == pc2ini_smith)   i_pc2_init_method = pc2init_smith
         if (pc2ini == pc2ini_bimodal) i_pc2_init_method = pc2init_bimodal
         l_pc2_implicit_erosion       = .true.

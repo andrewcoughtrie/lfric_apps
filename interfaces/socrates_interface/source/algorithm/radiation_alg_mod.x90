@@ -80,6 +80,7 @@ contains
 !> @param[in,out] conv_frozen_fraction     Convective frozen cloud fraction
 !> @param[in,out] conv_liquid_mmr          Convective liquid gridbox MMR
 !> @param[in,out] conv_frozen_mmr          Convective frozen gridbox MMR
+!> @param[in,out] conv_frozen_number       Convective frozen number conc
 !> @param[in]     dt                       Timestep length (s)
 subroutine radiation_alg(dtheta_rad, theta, exner, mr, moist_dyn,             &
                          pressure_in_wth, temperature_in_wth,                 &
@@ -93,7 +94,8 @@ subroutine radiation_alg(dtheta_rad, theta, exner, mr, moist_dyn,             &
                          rand_seed, n_cloud_layer,                            &
                          radiative_cloud_fraction, radiative_conv_fraction,   &
                          conv_liquid_fraction, conv_frozen_fraction,          &
-                         conv_liquid_mmr, conv_frozen_mmr, dt)
+                         conv_liquid_mmr, conv_frozen_mmr, conv_frozen_number,&
+                         dt)
 
   implicit none
 
@@ -116,6 +118,7 @@ subroutine radiation_alg(dtheta_rad, theta, exner, mr, moist_dyn,             &
   type( field_type ), intent( inout ) :: conv_frozen_fraction
   type( field_type ), intent( inout ) :: conv_liquid_mmr
   type( field_type ), intent( inout ) :: conv_frozen_mmr
+  type( field_type ), intent( inout ) :: conv_frozen_number
   type( field_collection_type ), intent(in) :: derived_fields
   type( field_collection_type ), intent(inout) :: radiation_fields
   type( field_collection_type ), intent(in) :: cloud_fields
@@ -147,7 +150,8 @@ subroutine radiation_alg(dtheta_rad, theta, exner, mr, moist_dyn,             &
 
   type( field_type ), pointer :: liquid_fraction     => null()
   type( field_type ), pointer :: frozen_fraction     => null()
-  type( field_type ), pointer :: sigma_mc            => null()
+  type( field_type ), pointer :: sigma_ml
+  type( field_type ), pointer :: sigma_mi
 
   type( field_type ), pointer :: cloud_drop_no_conc  => null()
   type( field_type ), pointer :: sulphuric           => null()
@@ -347,7 +351,8 @@ subroutine radiation_alg(dtheta_rad, theta, exner, mr, moist_dyn,             &
 
   call cloud_fields%get_field('liquid_fraction', liquid_fraction)
   call cloud_fields%get_field('frozen_fraction', frozen_fraction)
-  call cloud_fields%get_field('sigma_mc', sigma_mc)
+  call cloud_fields%get_field('sigma_ml', sigma_ml)
+  call cloud_fields%get_field('sigma_mi', sigma_mi)
 
   call aerosol_fields%get_field('cloud_drop_no_conc', cloud_drop_no_conc)
   call aerosol_fields%get_field('sulphuric', sulphuric)
@@ -401,6 +406,7 @@ subroutine radiation_alg(dtheta_rad, theta, exner, mr, moist_dyn,             &
   call conv_frozen_fraction%set_write_behaviour(write_diag_behaviour)
   call conv_liquid_mmr%set_write_behaviour(write_diag_behaviour)
   call conv_frozen_mmr%set_write_behaviour(write_diag_behaviour)
+  call conv_frozen_number%set_write_behaviour(write_diag_behaviour)
 
   ! ------------------------------------
   ! Initialise the radiation diagnostics
@@ -510,12 +516,12 @@ subroutine radiation_alg(dtheta_rad, theta, exner, mr, moist_dyn,             &
       stellar_irradiance_rts, orographic_correction_rts, &
       h2o, co2, o3, n2o, co, ch4, o2, so2, nh3, n2, h2, he, hcn, &
       cs, k, li, na, rb, tio, vo, &
-      mr(imr_cl), mr_ice, n_ice, &
+      mr(imr_cl), mr_ice, n_ice, conv_frozen_number, &
       conv_liquid_mmr, conv_frozen_mmr, &
       radiative_cloud_fraction, radiative_conv_fraction, &
       liquid_fraction, frozen_fraction, &
       conv_liquid_fraction, conv_frozen_fraction, &
-      sigma_mc, cloud_drop_no_conc, &
+      sigma_ml, sigma_mi, cloud_drop_no_conc, &
       rand_seed, n_cloud_layer, &
       tile_fraction, &
       tile_sw_direct_albedo, tile_sw_diffuse_albedo, &
@@ -559,12 +565,12 @@ subroutine radiation_alg(dtheta_rad, theta, exner, mr, moist_dyn,             &
       stellar_irradiance_rts, orographic_correction_rts,            &
       h2o, co2, o3, n2o, co, ch4, o2, so2, nh3, n2, h2, he, hcn,    &
       cs, k, li, na, rb, tio, vo,                                   &
-      mr(imr_cl), mr_ice, n_ice,                                    &
+      mr(imr_cl), mr_ice, n_ice, conv_frozen_number,                &
       conv_liquid_mmr, conv_frozen_mmr,                             &
       radiative_cloud_fraction, radiative_conv_fraction,            &
       liquid_fraction, frozen_fraction,                             &
       conv_liquid_fraction, conv_frozen_fraction,                   &
-      sigma_mc, cloud_drop_no_conc,                                 &
+      sigma_ml, sigma_mi, cloud_drop_no_conc,                       &
       rand_seed, n_cloud_layer,                                     &
       tile_fraction,                                                &
       tile_swinc_direct_albedo, tile_swinc_diffuse_albedo,          &
@@ -611,12 +617,12 @@ subroutine radiation_alg(dtheta_rad, theta, exner, mr, moist_dyn,             &
       t_layer_boundaries, d_mass, layer_heat_capacity, &
       h2o, co2, o3, n2o, co, ch4, o2, so2, nh3, n2, h2, he, hcn, &
       cs, k, li, na, rb, tio, vo, &
-      mr(imr_cl), mr_ice, n_ice, &
+      mr(imr_cl), mr_ice, n_ice, conv_frozen_number, &
       conv_liquid_mmr, conv_frozen_mmr, &
       radiative_cloud_fraction, radiative_conv_fraction, &
       liquid_fraction, frozen_fraction, &
       conv_liquid_fraction, conv_frozen_fraction, &
-      sigma_mc, cloud_drop_no_conc, &
+      sigma_ml, sigma_mi, cloud_drop_no_conc, &
       rand_seed, n_cloud_layer, &
       tile_fraction, tile_temperature, tile_lw_albedo, &
       sulphuric, aer_mix_ratio, &
@@ -652,12 +658,12 @@ subroutine radiation_alg(dtheta_rad, theta, exner, mr, moist_dyn,             &
       t_layer_boundaries, d_mass, layer_heat_capacity,           &
       h2o, co2, o3, n2o, co, ch4, o2, so2, nh3, n2, h2, he, hcn, &
       cs, k, li, na, rb, tio, vo,                                &
-      mr(imr_cl), mr_ice, n_ice,                                 &
+      mr(imr_cl), mr_ice, n_ice, conv_frozen_number,             &
       conv_liquid_mmr, conv_frozen_mmr,                          &
       radiative_cloud_fraction, radiative_conv_fraction,         &
       liquid_fraction, frozen_fraction,                          &
       conv_liquid_fraction, conv_frozen_fraction,                &
-      sigma_mc, cloud_drop_no_conc,                              &
+      sigma_ml, sigma_mi, cloud_drop_no_conc,                    &
       rand_seed, n_cloud_layer,                                  &
       tile_fraction, tile_temperature, tile_lwinc_albedo,        &
       sulphuric,                                                 &
@@ -715,8 +721,8 @@ subroutine radiation_alg(dtheta_rad, theta, exner, mr, moist_dyn,             &
       radiative_cloud_fraction, liquid_fraction, frozen_fraction, &
       mr(imr_cl), mr_ice, n_ice, cloud_drop_no_conc, &
       radiative_conv_fraction, conv_liquid_fraction, conv_frozen_fraction, &
-      conv_liquid_mmr, conv_frozen_mmr, sigma_mc, rand_seed, &
-      layer_heat_capacity, sulphuric, &
+      conv_liquid_mmr, conv_frozen_mmr, conv_frozen_number, sigma_ml, &
+      sigma_mi, rand_seed, layer_heat_capacity, sulphuric, &
       lw_up_surf, sw_up_surf, lw_up_toa, sw_up_toa, sw_direct_toa, &
       sw_direct_rts, sw_down_rts, sw_up_rts, lw_down_rts, lw_up_rts, &
       sw_direct_band_rts, sw_down_band_rts, sw_up_band_rts, &

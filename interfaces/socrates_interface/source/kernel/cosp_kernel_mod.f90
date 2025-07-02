@@ -26,7 +26,7 @@ private
 
 type, public, extends(kernel_type) :: cosp_kernel_type
   private
-  type(arg_type) :: meta_args(48) = (/ &
+  type(arg_type) :: meta_args(50) = (/ &
     arg_type(GH_FIELD,  GH_REAL,    GH_READ,  Wtheta),                    & ! pressure_in_wth
     arg_type(GH_FIELD,  GH_REAL,    GH_READ,  Wtheta),                    & ! temperature_in_wth
     arg_type(GH_FIELD,  GH_REAL,    GH_READ,  Wtheta),                    & ! rho_in_wth
@@ -45,7 +45,9 @@ type, public, extends(kernel_type) :: cosp_kernel_type
     arg_type(GH_FIELD,  GH_REAL,    GH_READ,  Wtheta),                    & ! conv_frozen_fraction
     arg_type(GH_FIELD,  GH_REAL,    GH_READ,  Wtheta),                    & ! conv_liquid_mmr
     arg_type(GH_FIELD,  GH_REAL,    GH_READ,  Wtheta),                    & ! conv_frozen_mmr
-    arg_type(GH_FIELD,  GH_REAL,    GH_READ,  Wtheta),                    & ! sigma_mc
+    arg_type(GH_FIELD,  GH_REAL,    GH_READ,  Wtheta),                    & ! conv_frozen_number
+    arg_type(GH_FIELD,  GH_REAL,    GH_READ,  Wtheta),                    & ! sigma_ml
+    arg_type(GH_FIELD,  GH_REAL,    GH_READ,  Wtheta),                    & ! sigma_mi
     arg_type(GH_FIELD,  GH_REAL,    GH_READ,  Wtheta),                    & ! cloud_drop_no_conc
     arg_type(GH_FIELD,  GH_REAL,    GH_READ,  Wtheta),                    & ! ls_rain_3d
     arg_type(GH_FIELD,  GH_REAL,    GH_READ,  Wtheta),                    & ! conv_rain_3d
@@ -107,7 +109,9 @@ contains
 !> @param[in]    conv_frozen_fraction       Convective frozen cloud fraction
 !> @param[in]    conv_liquid_mmr            Convective liquid gridbox MMR
 !> @param[in]    conv_frozen_mmr            Convective frozen gridbox MMR
-!> @param[in]    sigma_mc                   Fractional standard deviation of condensate
+!> @param[in]    conv_frozen_number         Convective frozen number conc
+!> @param[in]    sigma_ml                   Fractional standard deviation of liquid condensate
+!> @param[in]    sigma_mi                   Fractional standard deviation of ice condensate
 !> @param[in]    cloud_drop_no_conc         Cloud Droplet Number Concentration
 !> @param[in]    ls_rain_3d                 Large scale rain
 !> @param[in]    conv_rain_3d               Convective rain
@@ -166,8 +170,8 @@ subroutine cosp_code(nlayers, n_profile, &
                      liquid_fraction, frozen_fraction, &
                      radiative_conv_fraction, &
                      conv_liquid_fraction, conv_frozen_fraction, &
-                     conv_liquid_mmr, conv_frozen_mmr, &
-                     sigma_mc, cloud_drop_no_conc, &
+                     conv_liquid_mmr, conv_frozen_mmr, conv_frozen_number, &
+                     sigma_ml, sigma_mi, cloud_drop_no_conc, &
                      ls_rain_3d, conv_rain_3d, conv_snow_3d, &
                      lit_fraction, rand_seed, n_cloud_layer, &
                      n_subcol_gen, x1r, x2r, x1g, x2g, x4g, &
@@ -220,8 +224,8 @@ subroutine cosp_code(nlayers, n_profile, &
     mv, mcl, mcf, n_ice, &
     radiative_cloud_fraction, liquid_fraction, frozen_fraction, &
     radiative_conv_fraction, conv_liquid_fraction, conv_frozen_fraction, &
-    conv_liquid_mmr, conv_frozen_mmr, sigma_mc, cloud_drop_no_conc, &
-    ls_rain_3d, conv_rain_3d, conv_snow_3d
+    conv_liquid_mmr, conv_frozen_mmr, sigma_ml, sigma_mi, cloud_drop_no_conc, &
+    ls_rain_3d, conv_rain_3d, conv_snow_3d, conv_frozen_number
 
   integer(i_def), intent(in) :: ndf_w3, undf_w3
   integer(i_def), intent(in), dimension(ndf_w3, n_profile) :: map_w3
@@ -350,6 +354,7 @@ subroutine cosp_code(nlayers, n_profile, &
         liq_mmr_1d             = mcl(wth_1:wth_last),                        &
         ice_mmr_1d             = mcf(wth_1:wth_last),                        &
         ice_nc_1d              = n_ice(wth_1:wth_last),                      &
+        ice_conv_nc_1d         = conv_frozen_number(wth_1:wth_last),         &
         liq_dim_constant       = constant_droplet_effective_radius,          &
         liq_nc_1d              = cloud_drop_no_conc(wth_1:wth_last),         &
         conv_frac_1d           = radiative_conv_fraction(wth_1:wth_last),    &
@@ -359,8 +364,8 @@ subroutine cosp_code(nlayers, n_profile, &
         ice_conv_mmr_1d        = conv_frozen_mmr(wth_1:wth_last),            &
         liq_conv_dim_constant  = constant_droplet_effective_radius,          &
         liq_conv_nc_1d         = cloud_drop_no_conc(wth_1:wth_last),         &
-        liq_rsd_1d             = sigma_mc(wth_1:wth_last),                   &
-        ice_rsd_1d             = sigma_mc(wth_1:wth_last),                   &
+        liq_rsd_1d             = sigma_ml(wth_1:wth_last),                   &
+        ice_rsd_1d             = sigma_mi(wth_1:wth_last),                   &
         cloud_vertical_decorr  = cloud_vertical_decorr,                      &
         conv_vertical_decorr   = cloud_vertical_decorr,                      &
         liq_dim_aparam         = liu_aparam,                                 &
@@ -409,6 +414,7 @@ subroutine cosp_code(nlayers, n_profile, &
         liq_mmr_1d             = mcl(wth_1:wth_last),                        &
         ice_mmr_1d             = mcf(wth_1:wth_last),                        &
         ice_nc_1d              = n_ice(wth_1:wth_last),                      &
+        ice_conv_nc_1d         = conv_frozen_number(wth_1:wth_last),         &
         liq_dim_constant       = constant_droplet_effective_radius,          &
         liq_nc_1d              = cloud_drop_no_conc(wth_1:wth_last),         &
         conv_frac_1d           = radiative_conv_fraction(wth_1:wth_last),    &
