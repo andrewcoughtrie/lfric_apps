@@ -316,9 +316,8 @@ contains
                                      ls_theta, ls_exner, ls_mr, ls_moist_dyn )
 
     do i = 1, num_steps
-      call atl_si_timestep%step( modeldb, u, rho, theta, exner, mr, moist_dyn,          &
-                                 ls_u, ls_rho, ls_theta, ls_exner, ls_mr, ls_moist_dyn, &
-                                 mesh )
+      call atl_si_timestep%step( modeldb, u, rho, theta, exner, mr, moist_dyn, &
+                                 ls_u, ls_rho, ls_theta, ls_exner, ls_mr, ls_moist_dyn )
     end do
 
     ! --------------------------------------------------------------------------

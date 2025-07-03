@@ -27,6 +27,7 @@ module jedi_increment_mod
   use log_mod,                        only : log_event,          &
                                              log_scratch_space,  &
                                              LOG_LEVEL_INFO,     &
+                                             LOG_LEVEL_DEBUG,    &
                                              LOG_LEVEL_ERROR
   use model_clock_mod,                only : model_clock_type
   use namelist_collection_mod,        only : namelist_collection_type
@@ -100,6 +101,10 @@ contains
 
   !> Compute dot_product with a supplied input increment
   procedure, public :: dot_product_with
+
+  !> Compute dot_product with self, with each field component scaled by itself
+  !> and the relevant fields scaled by the same number.
+  procedure, public :: scaled_dot_product_with_itself
 
   !> Update the curent time
   procedure, public :: update_time
@@ -408,6 +413,46 @@ function dot_product_with( self, rhs ) result(dot_product)
   enddo
 
 end function dot_product_with
+
+!> @brief Scaled dot product with itself.
+!> @details Compute dot product with itself for each field. Then scale each
+!>          field with the corresponding dot product, and also the dot
+!>          products themselves (adding a tiny number to avoid divide-by-zero).
+!> @returns dot_product Total scaled dot product.
+function scaled_dot_product_with_itself( self ) result(dot_product)
+
+  implicit none
+
+  class( jedi_increment_type ), intent(inout) :: self
+  real( real64 )                              :: dot_product
+
+  ! Local
+  integer( kind=i_def )     :: n_variables
+  integer( kind=i_def )     :: ivar
+  real( real64 )            :: dot_product_ivar
+  real( real64 )            :: scale_factor
+  real( real64 ), parameter :: eps = 1.0e-30_real64
+
+  call log_event( "jedi_increment_type%scaled_dot_product_with_itself", LOG_LEVEL_DEBUG )
+
+  n_variables = self%field_meta_data%get_n_variables()
+
+  dot_product = 0.0_real64
+  do ivar=1,n_variables
+    dot_product_ivar = self%fields(ivar)%dot_product_with(self%fields(ivar))
+
+    write( log_scratch_space, * ) "Field = ", self%fields(ivar)%get_field_name(), &
+                                  ", dot product = ", dot_product_ivar
+    call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
+
+    ! eps avoids divide-by-zero
+    scale_factor = 1.0_real64 / (dot_product_ivar + eps)
+    call self%fields(ivar)%multiply_by(scale_factor)
+    dot_product_ivar = dot_product_ivar * scale_factor
+    dot_product = dot_product + dot_product_ivar
+  end do
+
+end function scaled_dot_product_with_itself
 
 !------------------------------------------------------------------------------
 ! Local methods to support LFRic-JEDI implementation

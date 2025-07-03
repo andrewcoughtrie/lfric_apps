@@ -39,6 +39,10 @@
 !------------------------------------------------------------------------------
 module jedi_lfric_linear_modeldb_driver_mod
 
+  use adjoint_model_mod,            only : initialise_adjoint_model, &
+                                           adjoint_step,             &
+                                           finalise_adjoint_model
+  use atl_si_timestep_alg_mod,      only : atl_si_timestep_type
   use constants_mod,                only : r_def, l_def, str_def
   use driver_config_mod,            only : init_config
   use driver_time_mod,              only : init_time, final_time
@@ -69,25 +73,28 @@ module jedi_lfric_linear_modeldb_driver_mod
 
   private
   public initialise_modeldb, finalise_modeldb
-  public step_tl, identity_step_tl
+  public step_tl, step_ad, identity_step_tl
 
 contains
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> @brief Sets up the modeldb and required infrastructure.
   !>
-  !> @param [in]     modeldb_name An identifier given to the modeldb
-  !> @param [in]     filename     The configuration file path and name
-  !> @param [in]     mpi_obj      The mpi object to be associated with the modeldb
-  !> @param [in,out] modeldb      The structure that holds model state
-  subroutine initialise_modeldb( modeldb_name, filename, mpi_obj, modeldb )
+  !> @param [in]     modeldb_name    An identifier given to the modeldb
+  !> @param [in]     filename        The configuration file path and name
+  !> @param [in]     mpi_obj         The mpi object to be associated with the modeldb
+  !> @param [in,out] modeldb         The structure that holds model state
+  !> @param [in]     atl_si_timestep Object encapsulating adjoint model timestep routines
+  subroutine initialise_modeldb( modeldb_name, filename, mpi_obj, modeldb, atl_si_timestep )
 
     implicit none
 
-    character(*),                 intent(in) :: modeldb_name
-    character(len=*),             intent(in) :: filename
-    type(lfric_mpi_type), target, intent(in) :: mpi_obj
-    type(modeldb_type),        intent(inout) :: modeldb
+    character(*),                 intent(in)    :: modeldb_name
+    character(len=*),             intent(in)    :: filename
+    type(lfric_mpi_type), target, intent(in)    :: mpi_obj
+    type(modeldb_type),           intent(inout) :: modeldb
+    type(atl_si_timestep_type),   intent(inout) :: atl_si_timestep
+
     ! Local
     type( gungho_time_axes_type )         :: model_axes
     type( mesh_type ),            pointer :: mesh
@@ -194,6 +201,9 @@ contains
     call initialise_linear_model( mesh, &
                                   modeldb )
 
+    call initialise_adjoint_model( modeldb, &
+                                   atl_si_timestep )
+
     ! Close IO and create new clock that is not linked to XIOS
     call final_time( modeldb )
 
@@ -246,6 +256,37 @@ contains
   end subroutine step_tl
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> @brief Increments the model state by a single timestep (adjoint).
+  !>
+  !> @param [in,out] modeldb         The structure that holds model state
+  !> @param [in]     atl_si_timestep Object encapsulating adjoint model timestep routines
+  subroutine step_ad( modeldb, atl_si_timestep )
+
+    implicit none
+
+    type( modeldb_type ),         intent(inout) :: modeldb
+    type( atl_si_timestep_type ), intent(inout) :: atl_si_timestep
+
+    ! Local
+    logical( kind=l_def )          :: clock_running
+
+    ! 1. Tick the clock and check its still running
+    clock_running = modeldb%clock%tick()
+
+    ! If the clock has finished then we need to abort and that may be due to
+    ! incorrect model_clock configuration
+    if ( .not. clock_running ) then
+      write ( log_scratch_space, '(A)' ) &
+              "jedi_lfric_linear_modeldb::The LFRic model clock has stopped."
+      call log_event( log_scratch_space, LOG_LEVEL_ERROR )
+    end if
+
+    ! 2. Step the adjoint model
+    call adjoint_step( modeldb, atl_si_timestep )
+
+  end subroutine step_ad
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> @brief Increments the model state by a single timestep.
   !>
   !> @param [in,out] modeldb   The structure that holds model state
@@ -272,12 +313,14 @@ contains
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> @brief Finalise the modeldb
-  !> @param [in,out] modeldb      The structure that holds model state
-  subroutine finalise_modeldb( modeldb )
+  !> @param [in,out] modeldb         The structure that holds model state
+  !> @param [in]     atl_si_timestep Object encapsulating adjoint model timestep routines
+  subroutine finalise_modeldb( modeldb, atl_si_timestep )
 
     implicit none
 
-    type(modeldb_type), intent(inout) :: modeldb
+    type(modeldb_type),         intent(inout) :: modeldb
+    type(atl_si_timestep_type), intent(inout) :: atl_si_timestep
 
     call log_event( 'Finalising linear model modeldb', LOG_LEVEL_TRACE )
 
@@ -286,6 +329,7 @@ contains
 
     ! Linear model configuration finalisation
     call finalise_linear_model()
+    call finalise_adjoint_model(atl_si_timestep)
 
     ! Destroy the fields stored in the modeldb model_data
     call finalise_model_data( modeldb )

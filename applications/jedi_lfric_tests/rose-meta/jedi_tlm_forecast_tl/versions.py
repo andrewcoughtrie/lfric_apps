@@ -425,3 +425,15 @@ class vn21_t590(MacroUpgrade):
         )
 
         return config, self.reports
+
+
+class vn21_t638(MacroUpgrade):
+    """Upgrade macro for ticket #638 by Tom Hill."""
+
+    BEFORE_TAG = "vn2.1_t590"
+    AFTER_TAG = "vn2.1_t638"
+
+    def upgrade(self, config, meta_config=None):
+        # Commands From: rose-meta/jedi_common
+        # Blank Upgrade Macro
+        return config, self.reports

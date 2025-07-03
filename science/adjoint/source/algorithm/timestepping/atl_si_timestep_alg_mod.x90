@@ -8,7 +8,7 @@
 module atl_si_timestep_alg_mod
 
   use atl_moist_dyn_factors_alg_mod,       only: atl_moist_dyn_factors_alg
-  use constants_mod,                       only: i_def, r_def, l_def
+  use constants_mod,                       only: i_def, r_def, l_def, str_def
   use log_mod,                             only: log_event, log_scratch_space, &
                                                  LOG_LEVEL_INFO, LOG_LEVEL_ERROR
   use driver_modeldb_mod,                  only: modeldb_type
@@ -36,6 +36,7 @@ module atl_si_timestep_alg_mod
   use adj_dg_inc_matrix_vector_kernel_mod, only: adj_dg_inc_matrix_vector_kernel_type
   use adj_stabilise_bl_u_kernel_mod,       only: adj_stabilise_bl_u_kernel_type
   use field_mod,                           only: field_type
+  use mesh_collection_mod,                 only: mesh_collection
   use mesh_mod,                            only: mesh_type
   use quadrature_xyoz_mod,                 only: quadrature_xyoz_type
   use operator_mod,                        only: operator_type
@@ -274,10 +275,8 @@ contains
   !> @param[in]     ls_exner      Exner pressure
   !> @param[in]     ls_mr         Mixing ratios
   !> @param[in]     ls_moist_dyn  Factors for moist dynamics
-  !> @param[in]     mesh          The current mesh
-  subroutine step( self, modeldb, u, rho, theta, exner, mr, moist_dyn,    &
-                   ls_u, ls_rho, ls_theta, ls_exner, ls_mr, ls_moist_dyn, &
-                   mesh )
+  subroutine step( self, modeldb, u, rho, theta, exner, mr, moist_dyn, &
+                   ls_u, ls_rho, ls_theta, ls_exner, ls_mr, ls_moist_dyn )
 
     implicit none
 
@@ -290,7 +289,6 @@ contains
     type(field_type),               intent(in)          :: ls_u, ls_rho, ls_theta, ls_exner
     type(field_type),               intent(in)          :: ls_mr(nummr)
     type(field_type),               intent(in)          :: ls_moist_dyn(num_moist_factors)
-    type(mesh_type),                intent(in), pointer :: mesh
 
     ! Local variables
     real(kind=r_def)                                   :: cast_dt
@@ -301,15 +299,23 @@ contains
     integer(kind=i_def)                                :: next_outer, next_inner
     real(kind=r_def)                                   :: varalpha, varbeta
     type(namelist_type), pointer                       :: mixed_solver_nml
+    type(namelist_type), pointer                       :: base_mesh_nml
     real(kind=r_def)                                   :: mixed_solver_a_tol
     type(field_type)                                   :: rhs_n_igh_u
     type(field_type)                                   :: advected_u
+    type(mesh_type), pointer                           :: mesh
+    character(len=str_def)                             :: prime_mesh_name
 
     if (subroutine_timers) call timer('semi_implicit_timestep_alg')
 
     cast_dt = real( modeldb%clock%get_seconds_per_step(), r_def )
 
     qr => get_qr_fe()
+
+    ! Get mesh
+    base_mesh_nml => modeldb%configuration%get_namelist('base_mesh')
+    call base_mesh_nml%get_value( 'prime_mesh_name', prime_mesh_name )
+    mesh => mesh_collection%get_mesh(prime_mesh_name)
 
     mm_wt  => get_mass_matrix_fe( Wtheta, mesh%get_id() )
     mm_vel => get_mass_matrix_fe( W2,     mesh%get_id() )

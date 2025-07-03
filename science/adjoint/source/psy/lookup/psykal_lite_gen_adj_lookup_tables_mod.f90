@@ -525,8 +525,8 @@ module psykal_lite_gen_lookup_tables_psy_mod
   END SUBROUTINE invoke_gen_poly_adv_upd_lookup_kernel
 
   !> @brief Additional edit required due to PSyclone issue #2934. Use of integer fields with LMA operators.
-  SUBROUTINE invoke_gen_w3h_adv_upd_lookup_kernel(advective_increment, wind, m3_inv, lookup_field, set_counts_field, lookup_field_dummy, &
-&set_counts_field_dummy, nsets_max, nindices, stencil_extent, loop_halo_depth)
+  SUBROUTINE invoke_gen_w3h_adv_upd_lookup_kernel(advective_increment, wind, m3_inv, lookup_field, set_counts_field, &
+lookup_field_dummy, set_counts_field_dummy, nsets_max, nindices, stencil_extent, loop_halo_depth)
     USE gen_w3h_adv_upd_lookup_kernel_mod, ONLY: gen_w3h_adv_upd_lookup_code
     USE mesh_mod, ONLY: mesh_type
     USE stencil_2D_dofmap_mod, ONLY: stencil_2D_dofmap_type, STENCIL_2D_CROSS

@@ -1,5 +1,5 @@
 !-----------------------------------------------------------------------------
-! (C) Crown copyright 2024 Met Office. All rights reserved.
+! (C) Crown copyright 2025 Met Office. All rights reserved.
 ! The file LICENCE, distributed with this code, contains details of the terms
 ! under which the code may be used.
 !-----------------------------------------------------------------------------
@@ -7,7 +7,7 @@
 !> @page jedi_tlm_tests program
 
 !> @brief Main program for running tlm adjoint tests with jedi emulator
-!>        objects.
+!>        objects. This version is used for the full linear and adjoint models.
 !>
 !> @details Setup and run the adjoint tests using the JEDI emulator objects.
 !>          The linear state trajectory is provided via the pseudo model
@@ -18,32 +18,20 @@
 !>          relies on the following identity for the inner product denoted with
 !>          angled braces <>:
 !>
-!>          <x,My> == <M^{T}x,y>
+!>          <Mx,Mx> == <AMx,x>
 !>
-!>          where M is the linear model forecast and M^{T} is the adjoint
-!>          (transpose) model forecast. x and y represent the models
-!>          initial perturbation state . Using arbitrary notation for a perturbation
-!>          state "I" and defining the following identities:
+!>          where M is the linear model forecast and A is the adjoint model forecast.
 !>
-!>                I22: x
-!>                I21: My
-!>          and
-!>                I21: M^{T}x
-!>                I11: y
+!>          This is true for any perturbation state vector x and so in
+!>          the test, a random one is used. x is called inc in the code.
 !>
-!>          Then we can test for the correctness of the adjoint by computing
-!>          the inner product and checking they are equal within machine
-!>          tolerance:
-!>
-!>            <I11,I21> == <I12,I22>
-!>
-!>          This is true for any perturbation state vector x and y and so in
-!>          the test, different random vector are computed (I11 and I22).
-!>
+!>          Note this test includes scaling of the prognostic fields so that individual
+!>          fields do not dominate the total inner product. Otherwise, the test is not fair.
 
-! Note: This program file represents generic OOPS code and so it should not be
+! Note: This program file represents generic JEDI code and so it should not be
 !       edited. If you need to make changes at the program level then please
 !       contact darth@metofice.gov.uk for advice.
+
 program jedi_tlm_tests
 
   use cli_mod,                      only : get_initial_filename
@@ -62,7 +50,7 @@ program jedi_tlm_tests
   use jedi_state_mod,               only : jedi_state_type
   use jedi_increment_mod,           only : jedi_increment_type
   use jedi_pseudo_model_mod,        only : jedi_pseudo_model_type
-  use jedi_id_linear_model_mod,     only : jedi_id_linear_model_type
+  use jedi_linear_model_mod,        only : jedi_linear_model_type
   use jedi_post_processor_traj_mod, only : jedi_post_processor_traj_type
 
   implicit none
@@ -70,12 +58,10 @@ program jedi_tlm_tests
   ! Emulator objects
   type( jedi_geometry_type )            :: geometry
   type( jedi_state_type )               :: state
-  type( jedi_increment_type )           :: increment_11
-  type( jedi_increment_type )           :: increment_12
-  type( jedi_increment_type )           :: increment_21
-  type( jedi_increment_type )           :: increment_22
-  type( jedi_pseudo_model_type )        :: psuedo_model
-  type( jedi_id_linear_model_type )     :: linear_model
+  type( jedi_increment_type )           :: inc
+  type( jedi_increment_type )           :: inc_initial
+  type( jedi_pseudo_model_type )        :: pseudo_model
+  type( jedi_linear_model_type )        :: linear_model
   type( jedi_run_type )                 :: run
   type( jedi_post_processor_traj_type ) :: pp_traj
 
@@ -88,8 +74,10 @@ program jedi_tlm_tests
   character( str_def )                      :: forecast_length_str
   real( kind=r_def )                        :: dot_product_1
   real( kind=r_def )                        :: dot_product_2
-  real(kind=r_def),               parameter :: overall_tolerance = 1500.0_r_def
-  real(kind=r_def)                          :: machine_tolerance
+  real( kind=r_def ),             parameter :: absolute_tolerance = 1.5E-7_r_def
+  real( kind=r_def )                        :: machine_tolerance
+  real( kind=r_def )                        :: absolute_diff
+  real( kind=r_def )                        :: relative_diff
 
   character(*), parameter :: program_name = "jedi_tlm_tests"
 
@@ -131,66 +119,59 @@ program jedi_tlm_tests
   call pp_traj%initialise( linear_model )
 
   ! Create non-linear model
-  call psuedo_model%initialise( configuration )
+  call pseudo_model%initialise( configuration )
 
   ! Run non-linear model forecast to populate the trajectory object
-  call psuedo_model%forecast( state, forecast_length, pp_traj )
+  call pseudo_model%forecast( state, forecast_length, pp_traj )
 
   ! ---- Perform the adjoint test
 
-  ! 1. I11 (= y). Create I11 and randomise.
-  call increment_11%initialise( geometry, configuration )
-  call increment_11%random()
+  ! Create inc_initial and randomise
+  call inc_initial%initialise( geometry, configuration )
+  call inc_initial%random()
+
   ! Check the norm is not zero
-  if (increment_11%norm() <= 0.0_r_def) &
-    call log_event("increment_11 norm not > 0.0", LOG_LEVEL_ERROR)
+  if (inc_initial%norm() <= 0.0_r_def) then
+    call log_event("inc_initial norm not > 0.0", LOG_LEVEL_ERROR)
+  end if
 
-  ! 2. I12 (= My). Create via copy constructor using I11 (=y). Propagate via
-  !                TL forecast.
-  call increment_12%initialise( increment_11 )
+  ! Create inc via copy constructor using inc_initial
+  call inc%initialise( inc_initial )
 
-  ! Propagate via TL model to obtain I12 (=My).
-  call linear_model%forecastTL( increment_12, forecast_length )
+  ! Propagate via TL model
+  call linear_model%forecastTL( inc, forecast_length )
+
   ! Check the norm is not zero
-  if (increment_12%norm() <= 0.0_r_def) &
-    call log_event("increment_12 norm not > 0.0", LOG_LEVEL_ERROR)
+  if (inc%norm() <= 0.0_r_def) then
+    call log_event("inc norm not > 0.0", LOG_LEVEL_ERROR)
+  end if
 
-  ! 3. I22 (= x). Create and randomise. Copy construct using I12 to ensure the
-  !               valid time = t_start + forecast_length.
-  call increment_22%initialise( increment_12 )
-  call increment_22%random()
+  ! Compute <Mx,Mx>
+  dot_product_1 = inc%scaled_dot_product_with_itself()
+
+  ! Propagate via AD model
+  call linear_model%forecastAD( inc, forecast_length )
   ! Check the norm is not zero
-  if (increment_22%norm() <= 0.0_r_def) &
-    call log_event("increment_22 norm not > 0.0", LOG_LEVEL_ERROR)
+  if (inc%norm() <= 0.0_r_def) then
+    call log_event("inc norm not > 0.0", LOG_LEVEL_ERROR)
+  end if
 
-  ! 4. I21 (= M^{T}x). Create via copy constructor using I11(=x) and propagate
-  !                    via AD forecast.
-  call increment_21%initialise( increment_22 )
-  ! Propagate via TL model to obtain I21 (=M^{T}x).
-  call linear_model%forecastAD( increment_21, forecast_length )
-  ! Check the norm is not zero
-  if (increment_21%norm() <= 0.0_r_def) &
-    call log_event("increment_21 norm not > 0.0", LOG_LEVEL_ERROR)
+  ! Compute <AMx,x>
+  dot_product_2 = inc%dot_product_with(inc_initial)
 
-  ! 5. Check the initail norms are different
-  if ( increment_22%norm() == increment_11%norm() ) &
-    call log_event("norms should not be identical", LOG_LEVEL_ERROR)
-
-  ! 6. Apply the Adjoint dot product test: <I11,I21> == <I12,I22>
-
-  ! <I11,I21>
-  dot_product_1 = increment_11%dot_product_with(increment_21)
-  ! <I12,I22>
-  dot_product_2 = increment_12%dot_product_with(increment_22)
-  ! <I11,I21> == <I12,I22>
-  !    The two dot products should be nearly identical. The tolerance is
-  !    included due to order of operation differences computed as the smallest
-  !    delta between two numbers of a given type using the larger dot_product
+  ! The two dot products should be nearly identical. The tolerance is included
+  ! due to differences in order of operations and solver non-convergence.
+  absolute_diff = abs( dot_product_1 - dot_product_2 )
   machine_tolerance = spacing( max( abs( dot_product_1 ), abs( dot_product_2 ) ) )
-  if (abs(dot_product_1-dot_product_2)>overall_tolerance*machine_tolerance ) then
-    call log_event("Adjoint test FAILED", LOG_LEVEL_ERROR)
+  relative_diff = absolute_diff / machine_tolerance
+  if ( absolute_diff > absolute_tolerance ) then
+    write( log_scratch_space, * ) "Adjoint test FAILED", &
+      dot_product_1, dot_product_2, absolute_diff, relative_diff
+    call log_event( log_scratch_space, LOG_LEVEL_ERROR )
   else
-    call log_event("Adjoint test PASS", LOG_LEVEL_INFO)
+    write( log_scratch_space, * ) "Adjoint test PASSED", &
+      dot_product_1, dot_product_2, absolute_diff, relative_diff
+    call log_event( log_scratch_space, LOG_LEVEL_INFO )
   endif
 
   call log_event( 'Finalising ' // program_name // ' ...', LOG_LEVEL_ALWAYS )

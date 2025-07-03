@@ -16,12 +16,13 @@
 !>          of type: linear_state_trajectory_type. The set_trajectory method is
 !>          included to provide the means to create and populate the LS fields.
 !>
-!>          An included test application (jedi_tlm_tests) performs the
+!>          An included test application (jedi_id_tlm_tests) performs the
 !>          standard adjoint test to ensure the correctness of the code.
 !>
 module jedi_id_linear_model_mod
 
-  use constants_mod,                 only : str_def
+  use atl_si_timestep_alg_mod,       only : atl_si_timestep_type
+  use constants_mod,                 only : str_def, i_def
   use driver_time_mod,               only : init_time, final_time
   use field_collection_mod,          only : field_collection_type
   use driver_modeldb_mod,            only : modeldb_type
@@ -39,8 +40,16 @@ module jedi_id_linear_model_mod
                                             log_scratch_space, &
                                             LOG_LEVEL_ERROR
   use namelist_mod,                  only : namelist_type
-  use transform_winds_mod,           only : wind_scalar_to_vector, wind_vector_to_scalar, &
-                                            adj_wind_scalar_to_vector, adj_wind_vector_to_scalar
+  use transform_winds_mod,           only : wind_scalar_to_vector,     &
+                                            wind_vector_to_scalar,     &
+                                            adj_wind_scalar_to_vector, &
+                                            adj_wind_vector_to_scalar
+  use jedi_lfric_moist_fields_mod,   only : update_ls_moist_fields,            &
+                                            init_moist_fields,                 &
+                                            adj_init_moist_fields,             &
+                                            copy_moist_fields_from_prognostic, &
+                                            copy_moist_fields_to_prognostic,   &
+                                            zero_moist_fields
   use zero_field_collection_mod,     only : zero_field_collection
 
   implicit none
@@ -60,6 +69,11 @@ type, public, extends(jedi_base_linear_model_type) :: jedi_id_linear_model_type
   !> @todo: Required public for checksum but need to move to atlas checksum
   !>        so make it private when that work is done.
   type(modeldb_type), public           :: modeldb
+
+  !> Object encapsulating adjoint model timestep routines
+  !> (Only needed to initialise and finalise adjoint model)
+  !> @todo: Will be incorporated into modeldb in #620
+  type( atl_si_timestep_type )         :: atl_si_timestep
 
 contains
 
@@ -114,8 +128,9 @@ subroutine initialise( self, jedi_geometry, config_filename )
   ! 1. Setup modeldb
 
   ! 1.1 Initialise the modeldb
-  call initialise_modeldb( "linear modeldb", config_filename, &
-                            jedi_geometry%get_mpi_comm(), self%modeldb )
+  call initialise_modeldb( "linear modeldb", config_filename,           &
+                            jedi_geometry%get_mpi_comm(), self%modeldb, &
+                            self%atl_si_timestep )
 
   ! 1.2 Add scalar winds that link the Atlas fields. These are used to
   ! perform interpolation between horizontally cell-centred and
@@ -183,8 +198,7 @@ subroutine model_initTL(self, increment)
 
   ! Local
   type( field_collection_type),  pointer :: prognostic_fields
-
-  nullify(prognostic_fields)
+  type( field_collection_type),  pointer :: moisture_fields
 
   ! 1. Update the the modeldb prognostic fields
   prognostic_fields => self%modeldb%fields%get_field_collection("prognostic_fields")
@@ -194,6 +208,12 @@ subroutine model_initTL(self, increment)
 
   ! Cell-centred winds to Edge based winds
   call wind_scalar_to_vector( prognostic_fields )
+
+  ! Update the missing mixing ratio and moist_dynamics fields. These fields are
+  ! computed analytically as outlined in jedi_lfric_linear_fields_mod
+  moisture_fields => self%modeldb%fields%get_field_collection("moisture_fields")
+  call copy_moist_fields_from_prognostic( moisture_fields, prognostic_fields )
+  call init_moist_fields( moisture_fields )
 
   ! Initialise clock and calendar
   call init_time( self%modeldb )
@@ -213,15 +233,18 @@ subroutine model_stepTL(self, increment)
   type( jedi_increment_type ),                intent(inout) :: increment
 
   ! Local
-  type( field_collection_type ), pointer :: depository
+  type( field_collection_type ), pointer :: ls_fields
   type( field_collection_type),  pointer :: prognostic_fields
-
-  nullify(depository, prognostic_fields)
+  type( field_collection_type ), pointer :: moisture_fields
 
   ! 1. Update the LFRic modeldb linear state fields
-  depository => self%modeldb%fields%get_field_collection("depository")
+  ls_fields => self%modeldb%fields%get_field_collection("ls_fields")
   call self%linear_state_trajectory%get_linear_state( increment%valid_time(), &
-                                                      depository )
+                                                      ls_fields )
+
+  ! Update the missing mixing ratio and moist_dynamics fields
+  moisture_fields => self%modeldb%fields%get_field_collection("moisture_fields")
+  call update_ls_moist_fields( ls_fields, moisture_fields )
 
   ! 2. Step the linear model
   call identity_step_tl( self%modeldb )
@@ -231,6 +254,8 @@ subroutine model_stepTL(self, increment)
 
   ! Interpolate W2 vector to W3/Wtheta scalar winds
   call wind_vector_to_scalar( prognostic_fields )
+
+  call copy_moist_fields_to_prognostic( moisture_fields, prognostic_fields )
 
   ! Set model_prognostics to the Atlas field emulators
   call increment%set_from_field_collection( variable_names, prognostic_fields )
@@ -267,15 +292,19 @@ subroutine model_initAD(self, increment)
 
   ! Local
   type( field_collection_type), pointer :: prognostic_fields
+  type( field_collection_type), pointer :: moisture_fields
 
-  nullify(prognostic_fields)
+  ! Initialise clock and calendar
+  call init_time( self%modeldb )
 
   ! Update the prognostic fields: zero LFRic fields
   prognostic_fields => self%modeldb%fields%get_field_collection("prognostic_fields")
   call zero_field_collection(prognostic_fields)
+  moisture_fields => self%modeldb%fields%get_field_collection("moisture_fields")
+  call zero_moist_fields(moisture_fields)
 
   !>@todo: in ticket #267
-  !>       Add call similar to init_time to setup reversable clock
+  !>       Replace clock with reversible clock
 
 end subroutine model_initAD
 
@@ -290,19 +319,25 @@ subroutine model_stepAD(self, increment)
   type( jedi_increment_type ),                intent(inout) :: increment
 
   ! Local
-  type( field_collection_type ), pointer :: depository
+  type( field_collection_type ), pointer :: ls_fields
   type( field_collection_type),  pointer :: prognostic_fields
+  type( field_collection_type),  pointer :: moisture_fields
+
+  ! Adjoint model integrates backwards in time, hence negative timestep
+  call increment%update_time( self%time_step * (-1_i_def) )
 
   ! 1. Update the LFRic modeldb linear state fields
 
   ! 1.1 Copy from the trajectory into the model_data
-  depository => self%modeldb%fields%get_field_collection("depository")
+  ls_fields => self%modeldb%fields%get_field_collection("ls_fields")
   call self%linear_state_trajectory%get_linear_state( increment%valid_time(), &
-                                                      depository )
+                                                      ls_fields )
 
-  ! 2. Step the linear model
-  !>@todo: in ticket #267
-  !> add identity_step_ad when reversable clock is available
+  moisture_fields => self%modeldb%fields%get_field_collection("moisture_fields")
+  call update_ls_moist_fields( ls_fields, moisture_fields )
+  !>@todo: In ticket #775
+  !>       This is always a repeated computation. Could be removed by storing
+  !>       the moist dynamics fields after the equivalent call in the TL step
 
   ! 3. Update the Atlas fields from the LFRic prognostic fields
   prognostic_fields => self%modeldb%fields%get_field_collection("prognostic_fields")
@@ -310,11 +345,13 @@ subroutine model_stepAD(self, increment)
   ! Set model_prognostics to the Atlas field emulators
   call increment%set_from_field_collection_ad( variable_names, prognostic_fields )
 
+  call copy_moist_fields_from_prognostic( moisture_fields, prognostic_fields )
+
   ! Adjoint of ... Interpolate W2 vector to W3/Wtheta scalar winds
   call adj_wind_vector_to_scalar( prognostic_fields )
 
-  ! 4. Update the increment time
-  call increment%update_time( self%time_step*(-1) )
+  !>@todo: in ticket #267
+  !> add identity_step_ad when reversable clock is available
 
 end subroutine model_stepAD
 
@@ -330,11 +367,13 @@ subroutine model_finalAD(self, increment)
 
   ! Local
   type( field_collection_type),  pointer :: prognostic_fields
-
-  nullify(prognostic_fields)
+  type( field_collection_type),  pointer :: moisture_fields
 
   ! 1. Update the the modeldb prognostic fields
+  moisture_fields => self%modeldb%fields%get_field_collection("moisture_fields")
+  call adj_init_moist_fields( moisture_fields )
   prognostic_fields => self%modeldb%fields%get_field_collection("prognostic_fields")
+  call copy_moist_fields_to_prognostic( moisture_fields, prognostic_fields )
 
   ! Cell-centred winds to Edge based winds
   call adj_wind_scalar_to_vector( prognostic_fields )
@@ -342,8 +381,11 @@ subroutine model_finalAD(self, increment)
   ! Get Atlas field emulators to the model_prognostics
   call increment%get_to_field_collection_ad( variable_names, prognostic_fields )
 
+  ! Finalise clock and calendar
+  call final_time( self%modeldb )
+
   !>@todo: in ticket #267
-  !> add call similar to final_time to close reversable clock
+  !>       Replace clock with reversible clock
 
 end subroutine model_finalAD
 
@@ -357,7 +399,7 @@ subroutine jedi_linear_model_destructor(self)
 
   type(jedi_id_linear_model_type), intent(inout) :: self
 
-  call finalise_modeldb( self%modeldb )
+  call finalise_modeldb( self%modeldb, self%atl_si_timestep )
 
 end subroutine jedi_linear_model_destructor
 

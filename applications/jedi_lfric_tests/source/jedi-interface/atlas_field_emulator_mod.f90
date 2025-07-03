@@ -51,6 +51,9 @@ module atlas_field_emulator_mod
     !> Compute dot_product with a supplied input field
     procedure, public :: dot_product_with
 
+    !> Multiply field by some scalar
+    procedure, public :: multiply_by
+
     !> Compute the sum of the squares
     procedure, public :: sum_of_squares
 
@@ -147,6 +150,20 @@ function dot_product_with( self, rhs ) result( dot_product )
   dot_product = sum( self%data*rhs%data )
 
 end function dot_product_with
+
+!> @brief Multiply field (self%data) by some scalar
+!>
+!> @param [in] scalar Scalar to multiply field by
+subroutine multiply_by(self, scalar)
+
+  implicit none
+
+  class( atlas_field_emulator_type ), intent(inout) :: self
+  real( kind=real64 ),                intent(in)    :: scalar
+
+  self%data = self%data * scalar
+
+end subroutine multiply_by
 
 !> @brief Compute the sum of the squares
 !>

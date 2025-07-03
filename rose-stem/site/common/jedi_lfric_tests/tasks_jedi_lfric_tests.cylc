@@ -63,11 +63,31 @@
         "tsteps": 13,
     }) %}
 
+{% elif task_ns.conf_name == "id_tlm_tests_default-C12" %}
+
+    {% do task_dict.update({
+        "app_name": "jedi_id_tlm_tests",
+        "opt_confs": ["default"],
+        "resolution": "C12",
+        "DT": 3600,
+        "tsteps": 13,
+    }) %}
+
 {% elif task_ns.conf_name == "tlm_tests_default-C12" %}
 
     {% do task_dict.update({
         "app_name": "jedi_tlm_tests",
         "opt_confs": ["default"],
+        "resolution": "C12",
+        "DT": 3600,
+        "tsteps": 13,
+    }) %}
+
+{% elif task_ns.conf_name == "tlm_tests_default-dry-C12" %}
+
+    {% do task_dict.update({
+        "app_name": "jedi_tlm_tests",
+        "opt_confs": ["default", "dry"],
         "resolution": "C12",
         "DT": 3600,
         "tsteps": 13,
@@ -94,7 +114,11 @@
     {% if "app_name" not in task_dict %}
         {% do task_dict.update({"app_name": "jedi_lfric_tests"}) %}
     {% endif %}
-    {% if task_ns.conf_name == "tlm_tests_default-C12" %}
+    {% if task_ns.conf_name == "id_tlm_tests_default-C12" %}
+        {# do nothing - this is a bit clunkey#}
+    {% elif task_ns.conf_name == "tlm_tests_default-C12" %}
+        {# do nothing - this is a bit clunkey#}
+    {% elif task_ns.conf_name == "tlm_tests_default-dry-C12" %}
         {# do nothing - this is a bit clunkey#}
     {% else  %}
         {% if "kgo_checks" not in task_dict %}
