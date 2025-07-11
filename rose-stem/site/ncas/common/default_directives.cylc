@@ -16,13 +16,15 @@
         "memory": [25, "GB"],
         "wallclock": wallclock_val,
         "build_memory": [25, "GB"],
-        "build_wallclock": 240,
-        "build_cpus": 4,
+        "build_wallclock": 60,
+        "build_cpus": 6,
 
         "lfric_atm": {
-            "build_wallclock": 60,
+            "build_wallclock": 120,
         },
         "mesh": {
+            "build_wallclock": 20,
+            "build_memory": [6, "GB"],
             "mesh_wallclock": 20,
             "mesh_memory": [6, "GB"],
             "mesh_cpus": 4,

@@ -29,41 +29,17 @@
             --account={{ HPC_ACCOUNT }}
             --chdir=/work/n02/n02/{{ HPC_USERNAME }}
 
-    [[EX_SERIAL_QUEUE]]
-        inherit = EX_SLURM
-        [[[directives]]]
-            --partition=serial
-            --qos=serial
-
-    [[EX_STANDARD_QUEUE]]
-        inherit = EX_SLURM
-        [[[directives]]]
-            --partition=standard
-            --qos=standard
-
-    [[EX_SHORT_QUEUE]]
-        inherit = EX_SLURM
-        [[[directives]]]
-            --partition=standard
-            --reservation=shortqos
-            --qos=short
-
     [[EX_BUILD]]
-        inherit=EX_SERIAL_QUEUE
         [[[environment]]]
             PSYCLONE_TRANSFORMATION="meto-ex1a"
 
     [[EX_GNU]]
         pre-script = """
                      umask 0022
-                     module load other-software
-                     module load spack
-                     {# If using your own spack install remove the following 2 lines #}
-                     {# will then use /work/n02/n02/your_username/.spack as spack directory #}
-                     export SPACK_USER_CONFIG_PATH=/work/y07/shared/lfric/.spack
-                     export SPACK_USER_CACHE_PATH=/work/y07/shared/lfric/.spack
-                     spack load lfric-meta%gcc
+                     module use /work/y07/shared/lfric/software/spack/lfric-spack/modules
                      module load PrgEnv-gnu
+                     module load lfric-spack
+                     spack load lfric-apps@2.1%gcc
                      """
         [[[environment]]]
              COMPILER = 'gnu'
@@ -71,28 +47,21 @@
     [[EX_CCE]]
         pre-script = """
                      umask 0022
-                     source /work/n02/shared/lfric/spack/share/spack/setup-env.sh
-                     spack env activate lfric-meta-cce
+                     module use /work/y07/shared/lfric/software/spack/lfric-spack/modules
                      module load PrgEnv-cray
+                     module load lfric-spack
+                     spack load lfric-apps@2.1%cce
                      """
         [[[environment]]]
              COMPILER = 'cce'
 
     [[EX_BUILD_GNU]]
-        inherit = EX_BUILD, EX_GNU
+        inherit = EX_SLURM, EX_BUILD, EX_GNU
 
     [[EX_BUILD_CCE]]
-        inherit = EX_BUILD, EX_CCE
+        inherit = EX_SLURM, EX_BUILD, EX_CCE
 
     [[EX_RUN]]
-        {%- if site_vars["hpc_queue"] == 'short' %}
-           inherit = EX_SHORT_QUEUE
-        {%- elif site_vars["hpc_queue"] == 'standard' %}
-           inherit = EX_STANDARD_QUEUE
-        {%- else %}
-           {% do LOG.info("Using standard queue - options standard or short") %}
-           inherit = EX_STANDARD_QUEUE
-        {%- endif %}
         [[[environment]]]
             BIG_DATA_DIR   = '/work/y07/shared/lfric/data/'
             SMALL_DATA_DIR = '/work/y07/shared/lfric/data/'
@@ -100,9 +69,7 @@
             RUN_METHOD = srun
 
     [[EX_MESH]]
-        inherit = EX_SHORT_QUEUE
-        [[[directives]]]
-            --time=00:10:00
+        inherit = EX_SLURM
 
     [[EX_MESH_GNU]]
         inherit = EX_MESH, EX_GNU
@@ -121,18 +88,13 @@
             PLATFORM_SYNC = true
 
     [[EX_RUN_GNU]]
-       inherit = EX_RUN, EX_GNU
+       inherit = EX_SLURM, EX_RUN, EX_GNU
 
     [[EX_RUN_CCE]]
-       inherit = EX_RUN, EX_CCE
+       inherit = EX_SLURM, EX_RUN, EX_CCE
 
     [[EX_TECH_BASE]]
-        inherit = EX_SHORT_QUEUE
-        [[[directives]]]
-            --nodes=1
-            --ntasks-per-node=1
-            --cpus-per-task=1
-            --time=0:20:0
+        inherit = EX_SLURM
 
     [[EX_PLOT]]
         inherit = EX_TECH_BASE

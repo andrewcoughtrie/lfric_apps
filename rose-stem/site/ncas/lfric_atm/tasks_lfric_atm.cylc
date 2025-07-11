@@ -3,6 +3,7 @@
 {% if task_ns.conf_name == "nwp_gal9_perf-C192_MG" %}
 
     {% do task_dict.update({
+        "opt_confs": ["um_dump","no_diags"],
         "resolution": "C192_MG",
         "DT": 720,
         "tsteps": 120,
@@ -21,12 +22,14 @@
 
 {% elif task_ns.conf_name == "nwp_gal9-C48_MG" %}
     {% do task_dict.update({
+        "mpi_parts": 54,
         "plot_str": "",
     }) %}
 
 {% elif task_ns.conf_name == "nwp_gal9-C224_MG" %}
 
     {% do task_dict.update({
+        "wallclock": 20,
         "plot_str": "",
     }) %}
 
