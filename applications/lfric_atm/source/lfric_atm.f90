@@ -29,14 +29,16 @@ program lfric_atm
   use gungho_driver_mod,      only: initialise, step, finalise
   use lfric_mpi_mod,          only: global_mpi
 
+  use timing_mod,             only: init_timing, start_timing, stop_timing, final_timing, tik, LPROF
+
   implicit none
 
   ! Model run working data set
   type(modeldb_type) :: modeldb
 
   character(*), parameter :: application_name = "lfric_atm"
-
   character(:), allocatable :: filename
+  integer(tik)              :: timing_handle_global
 
   modeldb%mpi => global_mpi
 
@@ -68,6 +70,10 @@ program lfric_atm
                     modeldb%configuration )
   call init_logger( modeldb%mpi%get_comm(), application_name )
   call init_timers( application_name )
+
+  call init_timing( modeldb )
+  if ( LPROF ) call start_timing( timing_handle_global, '__lfric_atm__ ')
+
   call init_collections()
   call init_time( modeldb )
   call init_counters( application_name )
@@ -82,6 +88,10 @@ program lfric_atm
   call final_counters( application_name )
   call final_time( modeldb )
   call final_collections()
+
+  if ( LPROF ) call stop_timing( timing_handle_global )
+  call final_timing()
+
   call final_timers( application_name )
   call final_logger( application_name )
   call final_config()
