@@ -8,7 +8,7 @@
 {% if task_ns.conf_name == "lfric2um-aquaplanet-C48L38_N48L38" %}
 
     {% do task_dict.update({
-        "opt_confs": [""],
+        "opt_confs": [],
         "resolution": "C48",
         "mesh_name": "dynamics",
         "source_grid_res": "C48",

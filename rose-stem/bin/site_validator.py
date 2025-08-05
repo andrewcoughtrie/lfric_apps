@@ -22,12 +22,13 @@ WORKING_CONFIGS = {
     ],
     "nci": [
         "gungho_model_gadi_developer",
-        "lfric_atm_gadi_developer"
+        "lfric_atm_gadi_developer",
+        "lfricinputs_developer",
     ],
     "niwa" : ["all"],
     "ncas" : ["archer2_atm"],
     "uoe" : ["all"],
-    "azngarch": ["azngarch_atm"], 
+    "azngarch": ["azngarch_atm"],
 }
 
 

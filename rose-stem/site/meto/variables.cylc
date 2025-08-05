@@ -34,6 +34,7 @@
 
 {% do site_vars.update({"launch_platform": "azspice"}) %}
 {% do site_vars.update({"scripts_platform": "azspice"}) %}
+{% do site_vars.update({"coupled_fcm_make_platform": "azspice"}) %}
 
 {% do site_vars.update({"mesh_build": {"ex1a": "gnu_fast-debug-64bit",
                                        "azspice": "gnu_fast-debug-64bit"} }) %}

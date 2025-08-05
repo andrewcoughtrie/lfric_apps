@@ -81,10 +81,6 @@
 
         {% include "templates/runtime/generate_runtime_build.cylc" %}
 
-    {% elif task_ns.application == "lfricinputs" %}
-
-        {% include "templates/runtime/generate_runtime_lfricinputs.cylc" %}
-
     {% elif task_ns.application == "mesh" %}
 
         {% include "templates/runtime/generate_runtime_mesh.cylc" %}
@@ -99,7 +95,20 @@
 
         {% include "templates/runtime/generate_runtime_lfric_coupled.cylc" %}
 
-    {# Everything else - plot, phystest, checksum and pert_compare for now #}
+    {# plotting tasks #}
+    {% elif task.startswith("plot") or task.startswith("memory_plot") %}
+
+        {% include "templates/runtime/generate_runtime_plot.cylc" %}
+
+    {# check tasks #}
+    {% elif task.startswith("check") or
+            task.startswith("rose_ana") or
+            task.startswith("pert_compare") or
+            task.startswith("phystest") %}
+
+        {% include "templates/runtime/generate_runtime_check.cylc" %}
+
+    {# Everything else - perftools #}
     {% else %}
 
         {% include "templates/runtime/generate_runtime_other.cylc" %}

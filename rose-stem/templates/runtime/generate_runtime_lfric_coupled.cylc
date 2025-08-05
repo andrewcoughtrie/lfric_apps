@@ -29,7 +29,7 @@
     {% else %}
     [[{{task}}]]
     {% endif %}
-        inherit=BUILD_{{task_ns.application|upper}}_{{task_ns.platform|upper}},{{task_ns.platform|upper}}_COUPLED_BUILD_CCE
+        inherit=BUILD_{{task_ns.application|upper}}_{{task_ns.platform|upper}},{{task_ns.platform|upper}}_BUILD_COUPLED_CCE
         script = rose task-run
         [[[environment]]]
             ROSE_TASK_APP = {{task_app}}

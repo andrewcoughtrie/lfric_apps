@@ -5,111 +5,13 @@
 {# ########################################################################### #}
 {% do LOG.debug("Entered templates/runtime/generate_runtime_other.cylc") %}
 
-{# Generate runtime section for tasks not included elsewhere #}
-{# Currently plot, checksum and phystest #}
+{# Generate runtime sections for other tasks not defined elsewhere, currently perftools #}
 
 {# Set the family inheritance for this task #}
 {% set inherit = namespace(str="") %}
 {% set inherit.str = task_family|upper %}
 
-{% if task.startswith("plot") %}
-{# Plotting Tasks #}
-
-    {% for family in task_values["plot_families"] %}
-        {% set inherit.str = inherit.str~","~family|upper %}
-    {% endfor %}
-
-    [[{{task}}]]
-        inherit={{inherit.str|upper}}
-        script = 'rose task-run --app-key=plot'
-        execution time limit = PT{{task_values["tech-tests_wallclock"]}}M
-        [[[environment]]]
-            NODAL_DATA_DIR = {{task_output_dir}}/results
-            PLOT_DIR       = {{task_output_dir}}/plots
-            PLOT_CONFIG    = {{task_values["plot_str"]}}
-        [[[directives]]]
-    {{ set_task_resources(task_values["tech-tests_cpus"], task_values["tech-tests_memory"]) }}
-
-{% elif task.startswith("memory_plot_ex") %}
-
-    {% for family in task_values["plot_families"] %}
-        {% set inherit.str = inherit.str~","~family|upper %}
-    {% endfor %}
-
-    {% set log_dir = "$CYLC_WORKFLOW_RUN_DIR/log/job/1/"~
-                     task_values["application_run_task"]~
-                     "/NN" %}
-
-    [[{{task}}]]
-        inherit={{inherit.str|upper}}
-        script = 'rose task-run --app-key=memory_profile'
-        [[[environment]]]
-            PLOT_DIR = {{task_output_dir}}/plots
-            TASK_LOG_DIR = {{log_dir}}
-        [[[directives]]]
-    {{ set_task_resources(task_values["tech-tests_cpus"], task_values["tech-tests_memory"]) }}
-
-{% elif task.startswith("check") %}
-{# Check KGO Checksum tasks #}
-
-    {% for family in task_values["checksum_families"] %}
-        {% set inherit.str = inherit.str~","~family|upper %}
-    {% endfor %}
-
-    {# Default kgo locations #}
-    {# current is in rose-stem/site/SITE/kgos, #}
-    {# new is in the task output dir #}
-    {# Can overwrite this per task, eg for nrun_vs_crun comparisons #}
-    {% set current_kgo = "$SOURCE_ROOT/apps/rose-stem/site/"~
-                          SITE~"/kgos/"~
-                          task_ns.application~"/"~
-                          task_ns.platform~
-                          "/checksum_"~task_family~".txt" %}
-    {% set new_kgo = task_output_dir~"/checksum.txt" %}
-
-    {% if "nrun-v-crun" in task %}
-        {# Work out the directories if comparing nrun-v-crun #}
-        {# "Current KGO" is the nrun task #}
-        {# "New KGO" is the restarted task #}
-        {% set crun_num = task_values["crun"] - 1 %}
-        {% set current_kgo = "$OUTPUT_ROOT/"~
-                              task_ns.application~"/"~
-                              task_values["task_family"] %}
-        {% set new_kgo = current_kgo~"-crun"~crun_num~"/checksum.txt" %}
-        {% set current_kgo = current_kgo~"/checksum.txt" %}
-    {% else %}
-        {# Inherit KGO_CHECKS family for triggering the check_groups_coverage task #}
-        {% set inherit.str = inherit.str~",KGO_CHECKS" %}
-    {% endif %}
-
-    [[{{task}}]]
-        inherit={{inherit.str|upper}}
-        script = 'rose task-run --app-key=check_kgo'
-        execution time limit = PT{{task_values["tech-tests_wallclock"]}}M
-        [[[environment]]]
-            CURRENT_KGO = {{current_kgo}}
-            NEW_KGO = {{new_kgo}}
-        [[[directives]]]
-    {{ set_task_resources(task_values["tech-tests_cpus"], task_values["tech-tests_memory"]) }}
-
-{% elif task.startswith("phystest") %}
-{# Phystest Tasks #}
-
-    {% for family in task_values["phystest_families"] %}
-        {% set inherit.str = inherit.str~","~family|upper %}
-    {% endfor %}
-
-    [[{{task}}]]
-        inherit={{inherit.str|upper}}
-        script = rose task-run --app-key=phystest
-        execution time limit = PT{{task_values["tech-tests_wallclock"]}}M
-        [[[environment]]]
-            PHYSTEST_DIR = {{task_output_dir}}
-            PHYSTEST_SCRIPT = {{task_values["phystest_str"]}}
-        [[[directives]]]
-    {{ set_task_resources(task_values["tech-tests_cpus"], task_values["tech-tests_memory"]) }}
-
-{% elif task.startswith("perftools") %}
+{% if task.startswith("perftools") %}
 {# Perftools Tasks #}
 
     {# We want to target the previous run task #}
@@ -121,8 +23,6 @@
                           task_ns.extras %}
 
     {# Set the family inheritance for this task #}
-    {% set inherit = namespace(str="") %}
-    {% set inherit.str = task_family|upper %}
     {% for family in task_values["run_families"] %}
         {% set inherit.str = inherit.str~","~family|upper %}
     {% endfor %}
@@ -138,30 +38,6 @@
         [[[directives]]]
     {{ set_task_resources(task_values["tech-tests_cpus"], task_values["tech-tests_memory"]) }}
 
-{% elif task.startswith("pert_compare") %}
-{# Perturbation Comparison Tests #}
-
-    {% for family in task_values["plot_families"] %}
-        {% set inherit.str = inherit.str~","~family|upper %}
-    {% endfor %}
-
-    {% set perturb_output = task_output_dir %}
-    {% set perturb_off_output = perturb_output~"_pert_off" %}
-
-    [[{{task}}]]
-        inherit={{inherit.str|upper}}
-        script = 'rose task-run --app-key=perturbation_compare'
-        execution time limit = PT{{task_values["tech-tests_wallclock"]}}M
-        [[[environment]]]
-            PERT_ON_TASK  = {{perturb_output}}
-            PERT_OFF_TASK = {{perturb_off_output}}
-            PLOT_DIR      = {{task_output_dir}}/plots
-            PERT_CONFIG   = {{task_values["pert_plot_str"]}}
-        [[[directives]]]
-    {{ set_task_resources(task_values["tech-tests_cpus"], task_values["tech-tests_memory"]) }}
-
 {% endif %}
-
-
 
 {% do LOG.debug("Finished in templates/runtime/generate_runtime_other.cylc") %}

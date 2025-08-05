@@ -5,12 +5,12 @@
 {# ########################################################################### #}
 {% do LOG.debug("Entered site/meto/lfricinputs/tasks_lfricinputs_azspice.cylc") %}
 
-
-
-{% if "perftools" in task_ns.compiler %}
-    {% do task_dict.update({
-        "kgo_checks": [],
-        "plot_str": "", }) %}
+{% if task_dict %}
+    {% if "mpi_parts" not in task_dict %}
+        {% do task_dict.update({
+            "mpi_parts": 12,
+        }) %}
+    {% endif %}
 {% endif %}
 
 {% do LOG.debug("Finished in site/meto/lfricinputs/tasks_lfricinputs_azspice.cylc") %}

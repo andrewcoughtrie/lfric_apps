@@ -3,13 +3,13 @@
 {# Macros here have largely been copied from the UM for now #}
 
 {% macro set_task_resources(mpi_ranks,
-                        memory,
-                        threads=1,
-                        xios_nodes=0,
-                        ocean_nodes=0,
-                        river_nodes=0,
-                        ranks_per_node=0,
-                        ranks_depth_pad=1) %}
+                            memory,
+                            threads=1,
+                            xios_nodes=0,
+                            ocean_nodes=0,
+                            river_nodes=0,
+                            ranks_per_node=0,
+                            ranks_depth_pad=1) %}
 
     {% set cpus_per_node = 48 %}
     {% if threads > 1 %}
@@ -21,7 +21,11 @@
 
     {% set gb_per_core = 4 %}
     {% set total_mem = gb_per_core*(mpi_ranks|int * threads|int + xios_nodes|int) %}
-    {{ set_memory([total_mem, "GB"]) }}
+    {% if total_mem > memory[0] %}
+        {{ set_memory([total_mem, "GB"]) }}
+    {% else %}
+        {{ set_memory(memory) }}
+    {% endif %}
 {% endmacro %}
 
 
