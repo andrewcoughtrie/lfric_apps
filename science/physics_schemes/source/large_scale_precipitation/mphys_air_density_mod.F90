@@ -184,11 +184,10 @@ if ( l_mphys_nonshallow ) then
 !$OMP           rho_dry, rhodz_dry, rho_r2, rhodz_moist, l_vol_interp_rho )    &
 !$OMP private ( i, j, k, interp, rho_th )
   k = 1
+  j = 1 ! Arrays passed in by LFRic have a size of 1 in the j dimension.
 !$OMP do SCHEDULE(STATIC)
-  do j = tdims%j_start, tdims%j_end
-    do i = tdims%i_start, tdims%i_end
-      deltaz(i,j,k) = r_rho_levels(i,j,k+1) - r_theta_levels(i,j,0)
-    end do
+  do i = tdims%i_start, tdims%i_end
+    deltaz(i,j,k) = r_rho_levels(i,j,k+1) - r_theta_levels(i,j,0)
   end do
 !$OMP end do NOWAIT
 !$OMP do SCHEDULE(STATIC)
@@ -201,11 +200,10 @@ if ( l_mphys_nonshallow ) then
   end do
 !$OMP end do NOWAIT
   k = tdims%k_end
+  j = 1 ! Arrays passed in by LFRic have a size of 1 in the j dimension.
 !$OMP do SCHEDULE(STATIC)
-  do j = tdims%j_start, tdims%j_end
-    do i = tdims%i_start, tdims%i_end
-      deltaz(i,j,k) = r_theta_levels(i,j,k) - r_rho_levels(i,j,k)
-    end do
+  do i = tdims%i_start, tdims%i_end
+    deltaz(i,j,k) = r_theta_levels(i,j,k) - r_rho_levels(i,j,k)
   end do
 !$OMP end do
 
@@ -260,17 +258,16 @@ if ( l_mphys_nonshallow ) then
 
   ! Special case of top model-level (rho(k+1) doesn't exist)
   k = tdims%k_end
+  j = 1 ! Arrays passed in by LFRic have a size of 1 in the j dimension.
 !$OMP do SCHEDULE(STATIC)
-  do j = tdims%j_start, tdims%j_end
-    do i = tdims%i_start, tdims%i_end
+  do i = tdims%i_start, tdims%i_end
 
-      rhodz_dry(i,j,k) = rho_dry(i,j,k) * deltaz(i,j,k)
+    rhodz_dry(i,j,k) = rho_dry(i,j,k) * deltaz(i,j,k)
 
-      rhodz_moist(i,j,k) = ( rho_r2(i,j,k) / (r_rho_levels(i,j,k)              &
-                                             *r_rho_levels(i,j,k)) )           &
-                           * deltaz(i,j,k)
+    rhodz_moist(i,j,k) = ( rho_r2(i,j,k) / (r_rho_levels(i,j,k)              &
+                          * r_rho_levels(i,j,k)) )                           &
+                          * deltaz(i,j,k)
 
-    end do
   end do
 !$OMP end do
 

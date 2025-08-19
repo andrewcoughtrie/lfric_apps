@@ -343,13 +343,12 @@ if (l_droplet_tpr) then
     ! and taper this profile
     !----------------------------------------------
 
-!$OMP PARALLEL do DEFAULT(none) SCHEDULE(STATIC) private(i,j)                  &
-!$OMP SHARED(tdims,ndrop_surf2,ndrop_surf)
-    do j = tdims%j_start, tdims%j_end
-      do i = tdims%i_start, tdims%i_end
-        ndrop_surf2(i,j) = ndrop_surf
-      end do ! tdims%i
-    end do   ! tdims%j
+    j = 1 ! Arrays passed in by LFRic have a size of 1 in the j dimension.
+!$OMP PARALLEL do DEFAULT(none) SCHEDULE(STATIC) private(i)                    &
+!$OMP SHARED(tdims,ndrop_surf2,ndrop_surf,j)
+    do i = tdims%i_start, tdims%i_end
+      ndrop_surf2(i,j) = ndrop_surf
+    end do ! tdims%i
 !$OMP end PARALLEL do
 
 !$OMP PARALLEL do DEFAULT(none) SCHEDULE(STATIC) private(i,j,k,n_aer2,tempv)   &
@@ -1018,19 +1017,18 @@ else ! l_droplet_tpr
     ! Set the first level
 !$OMP  PARALLEL DEFAULT(none)                                                  &
 !$OMP  SHARED( tdims, land_fract, n_drop_tpr )                                 &
-!$OMP  private( i, j, k )
+!$OMP  private( i, k, j )
+    j = 1 ! Arrays passed in by LFRic have a size of 1 in the j dimension.
 !$OMP do SCHEDULE(STATIC)
-    do j = tdims%j_start, tdims%j_end
-      do i = tdims%i_start, tdims%i_end
+    do i = tdims%i_start, tdims%i_end
 
-        if (land_fract(i,j) >= 0.5) then
-          n_drop_tpr(i,j,1) = ntot_land
-        else ! land_fract
-          n_drop_tpr(i,j,1) = ntot_sea
-        end if ! land fract
+      if (land_fract(i,j) >= 0.5) then
+        n_drop_tpr(i,j,1) = ntot_land
+      else ! land_fract
+        n_drop_tpr(i,j,1) = ntot_sea
+      end if ! land fract
 
-      end do ! i (tdims%i)
-    end do ! j (tdims%j)
+    end do ! i (tdims%i)
 !$OMP end do
 
     ! copy up to higher levels - thus avoiding too many branches

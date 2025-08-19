@@ -468,13 +468,20 @@ parameter (                                                                    &
                          ! Used for LS_PPNC  compress.
 )
 !  Define local variables ----------------------------------------------
-integer :: i,k,j,it,i_wt,                                                      &
+integer :: i,k,it,i_wt,                                                        &
                       ! Loop counters: I - horizontal field index;
-!                                        K - vertical level index.
-             kp1,                                                              &
-                        ! Index of level above: k=k+1, apart from
-                        ! when k=_dims%end when kp1=k.
-             n          ! "nval" for WHEN routine.
+                      ! K - vertical level index.
+           kp1,                                                                &
+                      ! Index of level above: k=k+1, apart from
+                      ! when k=_dims%end when kp1=k.
+           n,                                                                  &
+                      ! "nval" for WHEN routine.
+           i_jul, j_jul
+                      ! i and j local indexes for Jules flag section.
+                      ! Allows j to be a parameter below.
+
+integer, parameter :: j = 1 ! Arrays passed in by LFRic have a
+                            ! size of 1 in the j dimension.
 
 real(kind=real_umphys) :: work
                     ! work variable
@@ -596,42 +603,37 @@ iter_eta = iter_z / mphys_mod_top
 ! Internal structure.
 ! 2a. Initialise outside of iterative loop.
 !-----------------------------------------------------------------------
+
 !$OMP PARALLEL DEFAULT(none)                                                   &
 !$OMP SHARED( tdims, lsrain_mean, lssnow_mean, lsgraup_mean, lsrain3d,         &
-!$OMP         lssnow3d, lsgraup3d, rainfrac3d, lspice_dim1, lspice_dim2,       &
+!$OMP         lssnow3d, lsgraup3d, rainfrac3d, lspice_dim1,                    &
 !$OMP         lspice_dim3, l_wtrac, n_wtrac, wtrac_as )                        &
-!$OMP private( i, j, k, i_wt )
+!$OMP private( i, k, i_wt )
 !$OMP  do SCHEDULE(STATIC)
-do j = tdims%j_start, tdims%j_end
-  do i = tdims%i_start, tdims%i_end
-    lsrain_mean(i,j) =0.0
-    lssnow_mean(i,j) =0.0
-    lsgraup_mean(i,j)=0.0
-  end do ! Loop over points,i
-end do ! Loop over points,j
+do i = tdims%i_start, tdims%i_end
+  lsrain_mean(i,j) =0.0
+  lssnow_mean(i,j) =0.0
+  lsgraup_mean(i,j)=0.0
+end do ! Loop over points,i
 !$OMP end do NOWAIT
 
 !$OMP do SCHEDULE(STATIC)
 do k = 1, lspice_dim3
-  do j = 1, lspice_dim2
-    do i = 1, lspice_dim1
-      lsrain3d(i,j,k)=0.0
-      lssnow3d(i,j,k)=0.0
-      lsgraup3d(i,j,k)=0.0
-      rainfrac3d(i,j,k)=0.0
-    end do ! Loop over points,i
-  end do ! Loop over points,j
+  do i = 1, lspice_dim1
+    lsrain3d(i,j,k)=0.0
+    lssnow3d(i,j,k)=0.0
+    lsgraup3d(i,j,k)=0.0
+    rainfrac3d(i,j,k)=0.0
+  end do ! Loop over points,i
 end do ! Loop over points,k
 !$OMP end do NOWAIT
 
 if (l_wtrac) then
   do i_wt = 1, n_wtrac
 !$OMP do SCHEDULE(STATIC)
-    do j = tdims%j_start, tdims%j_end
-      do i = tdims%i_start, tdims%i_end
-        wtrac_as(i_wt)%ls_rain(i,j) = 0.0
-        wtrac_as(i_wt)%ls_snow(i,j) = 0.0
-      end do
+    do i = tdims%i_start, tdims%i_end
+      wtrac_as(i_wt)%ls_rain(i,j) = 0.0
+      wtrac_as(i_wt)%ls_snow(i,j) = 0.0
     end do
 !$OMP end do NOWAIT
   end do
@@ -652,170 +654,148 @@ do it = 1, niters_mp ! Substep outside of column
 !$OMP SHARED( tdims, lsrain, lssnow, lssnow2, lsgraup, droplet_flux,           &
 !$OMP         cttemp, rainfrac, rainfrac_impr, precfrac_fall, frac_ice_above,  &
 !$OMP         vfall, vfall2, vfall_rain, vfall_graup, cf_max, n_drop_3d,       &
-!$OMP         l_wtrac, n_wtrac, wtrac_mp )                                     &
-!$OMP  private( i, j, k, i_wt )
+!$OMP         l_wtrac, n_wtrac, wtrac_mp)                                      &
+!$OMP  private( i, k, i_wt )
 !$OMP do SCHEDULE(STATIC)
-  do j = tdims%j_start, tdims%j_end
-    do i = tdims%i_start, tdims%i_end
+  do i = tdims%i_start, tdims%i_end
 
-      lsrain(i,j)=0.0
-      lssnow(i,j)=0.0
-      lssnow2(i,j)=0.0
-      lsgraup(i,j)=0.0
-      droplet_flux(i,j)=0.0
-      cttemp(i,j)=0.0
-      rainfrac(i,j)=0.0
-      rainfrac_impr(i,j)=0.0
-      precfrac_fall(i,j)=0.0
-      frac_ice_above(i,j)=0.0
-      vfall(i,j)=0.0
-      vfall2(i,j)=0.0
-      vfall_rain(i,j)=0.0
-      vfall_graup(i,j)=0.0
-      cf_max(i,j)=-huge(1.0)
-
-    end do ! Loop over points,i
-  end do ! Loop over points,j
+    lsrain(i,j)=0.0
+    lssnow(i,j)=0.0
+    lssnow2(i,j)=0.0
+    lsgraup(i,j)=0.0
+    droplet_flux(i,j)=0.0
+    cttemp(i,j)=0.0
+    rainfrac(i,j)=0.0
+    rainfrac_impr(i,j)=0.0
+    precfrac_fall(i,j)=0.0
+    frac_ice_above(i,j)=0.0
+    vfall(i,j)=0.0
+    vfall2(i,j)=0.0
+    vfall_rain(i,j)=0.0
+    vfall_graup(i,j)=0.0
+    cf_max(i,j)=-huge(1.0)
+  end do ! Loop over points,i
 !$OMP end do NOWAIT
 
 !$OMP do SCHEDULE(STATIC)
   do k = 1, tdims%k_end
-    do j = tdims%j_start, tdims%j_end
-      do i = tdims%i_start, tdims%i_end
-        ! Initialise n_drop_3d to zero before passing down code tree
-        n_drop_3d(i,j,k)=0.0
-      end do
-    end do
-  end do
+    do i = tdims%i_start, tdims%i_end
+      ! Initialise n_drop_3d to zero before passing down code tree
+      n_drop_3d(i,j,k)=0.0
+    end do ! Loop over points,i
+  end do ! Loop over k
 !$OMP end do NOWAIT
 
   if (l_wtrac) then
     do i_wt = 1, n_wtrac
 !$OMP do SCHEDULE(STATIC)
-      do j = tdims%j_start, tdims%j_end
-        do i = tdims%i_start, tdims%i_end
-          wtrac_mp(i_wt)%lsrain(i,j)       = 0.0
-          wtrac_mp(i_wt)%lssnow(i,j)       = 0.0
-          wtrac_mp(i_wt)%droplet_flux(i,j) = 0.0
-        end do
-      end do
+      do i = tdims%i_start, tdims%i_end
+        wtrac_mp(i_wt)%lsrain(i,j)       = 0.0
+        wtrac_mp(i_wt)%lssnow(i,j)       = 0.0
+        wtrac_mp(i_wt)%droplet_flux(i,j) = 0.0
+      end do ! Loop over points,i
 !$OMP end do NOWAIT
-    end do
+    end do ! Loop over wt
   end if
 !$OMP end PARALLEL
 
   do k = tdims%k_end, 1, -1
-!$OMP PARALLEL DEFAULT(SHARED) private( i, j, work)
+!$OMP PARALLEL DEFAULT(SHARED) private( i, work )
 !$OMP do SCHEDULE(STATIC)
-    do j = tdims%j_start, tdims%j_end
-      do i = tdims%i_start, tdims%i_end
+    do i = tdims%i_start, tdims%i_end
 
-        !-----------------------------------------------------------------------
-        !  2.5 Form index IX to gather/scatter variables in LS_PPNC
-        !-----------------------------------------------------------------------
+      !-----------------------------------------------------------------------
+      !  2.5 Form index IX to gather/scatter variables in LS_PPNC
+      !-----------------------------------------------------------------------
 
-        !  Set index where cloud fraction > CFMIN or where non-zero pptn
-        !  Note: whenimd is functionally equivalent to WHENILE (but autotasks).
+      !  Set index where cloud fraction > CFMIN or where non-zero pptn
+      !  Note: whenimd is functionally equivalent to WHENILE (but autotasks).
 
-        ! Set up if statement to determine whether to call the
-        ! microphysics code for this grid box (i.e. if there is
-        ! already condensate in the grid box or there is
-        ! precipitation about to fall into the grid box)
-        work = qcf(i,j,k)
+      ! Set up if statement to determine whether to call the
+      ! microphysics code for this grid box (i.e. if there is
+      ! already condensate in the grid box or there is
+      ! precipitation about to fall into the grid box)
+      work = qcf(i,j,k)
 
-        ! Include extra microphysics variables if in use
-        if (l_mcr_qcf2 )  work = work + qcf2(i,j,k) + lssnow2(i,j)
-        if (l_mcr_qrain)  work = work + qrain(i,j,k)
-        if (l_mcr_qgraup) work = work + qgraup(i,j,k)+lsgraup(i,j)
-        work = work + droplet_flux(i,j)   ! droplet settling
+      ! Include extra microphysics variables if in use
+      if (l_mcr_qcf2 )  work = work + qcf2(i,j,k) + lssnow2(i,j)
+      if (l_mcr_qrain)  work = work + qrain(i,j,k)
+      if (l_mcr_qgraup) work = work + qgraup(i,j,k)+lsgraup(i,j)
+      work = work + droplet_flux(i,j)   ! droplet settling
 
-        if (cfl(i,j,k) > cfmin .or.                                            &
-           (lsrain(i,j)+lssnow(i,j)) > 0.0 .or. work > 0.0) then
-              ! include this grid box.
-              ! Strictly speaking the CFL > CFMIN clause is too
-              ! restrictive since ice nucleation does not require
-              ! liquid water, but the code would be very messy.
-          l_use_gridbox(i,j) = .true.
-              ! Note that mphys is done on this point if diagnostic is
-              ! requested
-          if (l_point_diag) mphys_pts(i,j,k) = .true.
-        else
-          l_use_gridbox(i,j) = .false.
-        end if
+      if (cfl(i,j,k) > cfmin .or.                                            &
+          (lsrain(i,j)+lssnow(i,j)) > 0.0 .or. work > 0.0) then
+            ! include this grid box.
+            ! Strictly speaking the CFL > CFMIN clause is too
+            ! restrictive since ice nucleation does not require
+            ! liquid water, but the code would be very messy.
+        l_use_gridbox(i,j) = .true.
+            ! Note that mphys is done on this point if diagnostic is
+            ! requested
+        if (l_point_diag) mphys_pts(i,j,k) = .true.
+      else
+        l_use_gridbox(i,j) = .false.
+      end if
 
-      end do
-    end do
+    end do ! tdims%i
 !$OMP end do NOWAIT
 
     if ( .not. l_mcr_precfrac ) then
       ! If remembering the rain fraction from previous timesteps,
       ! the following setup is not needed
-
 !$OMP do SCHEDULE(STATIC)
-      do j = tdims%j_start, tdims%j_end
-        do i = tdims%i_start, tdims%i_end
-
-          ! set up improved rain fraction...
-
-          rainfrac_impr(i,j) = rainfrac(i,j)
-        end do
-      end do
+      do i = tdims%i_start, tdims%i_end
+        ! set up improved rain fraction...
+        rainfrac_impr(i,j) = rainfrac(i,j)
+      end do ! tdims%i
 !$OMP end do NOWAIT
 
       if (l_mcr_qrain) then
 !$OMP do SCHEDULE(STATIC)
-        do j = tdims%j_start, tdims%j_end
-          do i = tdims%i_start, tdims%i_end
-            ! CF_MAX contains the maximum CF values of all the levels
-            ! higher than k.
-            if (k /= tdims%k_end) then
-              cf_max(i,j) = max(cf_max(i,j), cf(i,j,k+1))
-            end if
+        do i = tdims%i_start, tdims%i_end
+          ! CF_MAX contains the maximum CF values of all the levels
+          ! higher than k.
+          if (k /= tdims%k_end) then
+            cf_max(i,j) = max(cf_max(i,j), cf(i,j,k+1))
+          end if
 
-            if ( qrain(i,j,k) > 0.0 ) then
-              if (rainfrac_impr(i,j) == 0.0) then
-                ! if cloud is present, assume this is a good proxy for the
-                ! rain fraction
-                rainfrac_impr(i,j) = max( cf(i,j,k), cf_max(i,j))
-              end if
-              if (rainfrac_impr(i,j) == 0.0) then
-                ! otherwise set to 0.5
-                rainfrac_impr(i,j) = 0.5
-                ! set a lower limit for stability
-              else if (rainfrac_impr(i,j) <= 0.01) then
-                rainfrac_impr(i,j) = 0.01
-              end if
+          if ( qrain(i,j,k) > 0.0 ) then
+            if (rainfrac_impr(i,j) == 0.0) then
+              ! if cloud is present, assume this is a good proxy for the
+              ! rain fraction
+              rainfrac_impr(i,j) = max( cf(i,j,k), cf_max(i,j))
             end if
-          end do
-        end do
+            if (rainfrac_impr(i,j) == 0.0) then
+              ! otherwise set to 0.5
+              rainfrac_impr(i,j) = 0.5
+              ! set a lower limit for stability
+            else if (rainfrac_impr(i,j) <= 0.01) then
+              rainfrac_impr(i,j) = 0.01
+            end if
+          end if
+        end do ! tdims%i
 !$OMP end do NOWAIT
       end if
 
       if (l_warm_new) then
 !$OMP do SCHEDULE(STATIC)
-        do j = tdims%j_start, tdims%j_end
-          do i = tdims%i_start, tdims%i_end
-            ! Always set rain fraction back to improved rain fraction
-            rainfrac(i,j) = rainfrac_impr(i,j)
-          end do
-        end do
+        do i = tdims%i_start, tdims%i_end
+          ! Always set rain fraction back to improved rain fraction
+          rainfrac(i,j) = rainfrac_impr(i,j)
+        end do ! tdims%i
 !$OMP end do NOWAIT
       end if
     end if  ! ( .not. l_mcr_precfrac )
 !$OMP end PARALLEL
 
     n=0
-    do j = tdims%j_start, tdims%j_end
-      do i = tdims%i_start, tdims%i_end
-
-        if (l_use_gridbox(i,j)) then
-          n = n + 1
-          ix(n,1) = i
-          ix(n,2) = j
-        end if
-
-      end do ! Loop over points,i
-    end do ! Loop over points,j
+    do i = tdims%i_start, tdims%i_end
+      if (l_use_gridbox(i,j)) then
+        n = n + 1
+        ix(n,1) = i
+        ix(n,2) = j
+      end if
+    end do ! tdims%i
 
 
     if (n > 0) then
@@ -854,97 +834,86 @@ do it = 1, niters_mp ! Substep outside of column
     ! Copy rainfall and snowfall rates to 3D fields for diagnostic output
 
     if ( l_3ddiag ) then
-
       ! Only copy rain and snow to 3D fields if arrays are dimensionalized.
-
 !$OMP PARALLEL do SCHEDULE(STATIC) DEFAULT(none)                               &
 !$OMP SHARED( tdims, lsrain3d, lsrain, droplet_flux, one_over_niters_mp,       &
 !$OMP         lssnow3d, lsgraup3d, lssnow, lssnow2, lsgraup, rainfrac3d,       &
-!$OMP         rainfrac, k )                                                    &
-!$OMP private( i, j )
-      do j = tdims%j_start, tdims%j_end
+!$OMP         rainfrac, k)                                                     &
+!$OMP private(i)
+      do i = tdims%i_start, tdims%i_end
 
-        do i = tdims%i_start, tdims%i_end
+        lsrain3d(i, j, k)   = lsrain3d(i, j, k) +                            &
+            (lsrain(i, j) + droplet_flux(i, j))*one_over_niters_mp
 
-          lsrain3d(i, j, k)   = lsrain3d(i, j, k) +                            &
-             (lsrain(i, j) + droplet_flux(i, j))*one_over_niters_mp
+        lssnow3d(i, j, k)   = lssnow3d(i, j, k) +                            &
+            (lssnow(i, j) + lssnow2(i, j) + lsgraup(i, j))                   &
+            *one_over_niters_mp
 
-          lssnow3d(i, j, k)   = lssnow3d(i, j, k) +                            &
-             (lssnow(i, j) + lssnow2(i, j) + lsgraup(i, j))                    &
-             *one_over_niters_mp
+        lsgraup3d(i, j, k)  = lsgraup3d(i, j, k) +                           &
+                                ( lsgraup(i, j) * one_over_niters_mp )
 
-          lsgraup3d(i, j, k)  = lsgraup3d(i, j, k) +                           &
-                                 ( lsgraup(i, j) * one_over_niters_mp )
+        rainfrac3d(i, j, k) = rainfrac3d(i, j, k) +                          &
+            rainfrac(i, j)*one_over_niters_mp
 
-          rainfrac3d(i, j, k) = rainfrac3d(i, j, k) +                          &
-             rainfrac(i, j)*one_over_niters_mp
-
-
-        end do
-
-      end do
+      end do ! tdims%i
 !$OMP end PARALLEL do
-
     end if
 
-  end do ! Loop over K
+  end do ! Loop over k
 
   ! save rain fraction on land points to pass to Jules
   ! loop over K is backwards, hence rainfrac now contains the level 1
   ! (surface) value
-!$OMP PARALLEL DEFAULT(SHARED) private( i, j, k, i_wt )
+!$OMP PARALLEL DEFAULT(SHARED) private( k, i_wt, j_jul, i_jul )
   if (l_var_rainfrac) then
 !$OMP do SCHEDULE(STATIC)
     do k = 1, land_points
-      j = (land_index(k)-1)/ ( tdims%i_len ) + 1
-      i = land_index(k) - (j-1)*( tdims%i_len )
-      ls_rainfrac(k) = ls_rainfrac(k) + rainfrac(i,j)*one_over_niters_mp
+      j_jul = (land_index(k)-1)/ ( tdims%i_len ) + 1
+      i_jul = land_index(k) - (j_jul-1)*( tdims%i_len )
+      ls_rainfrac(k) = ls_rainfrac(k) +                                      &
+          rainfrac(i_jul,j_jul)*one_over_niters_mp
     end do
 !$OMP end do NOWAIT
-  end if
+  end if ! Loop over k
 
   ! If substepping outside of loop over K, then need to accumulate (mean)
   ! precip rates...
+
 !$OMP do SCHEDULE(STATIC)
-  do j = tdims%j_start, tdims%j_end
+  do i = tdims%i_start, tdims%i_end
 
-    do i = tdims%i_start, tdims%i_end
+    lsrain_mean(i, j) = lsrain_mean(i, j)                                    &
+        + (lsrain(i, j) + droplet_flux(i, j))*one_over_niters_mp
 
-      lsrain_mean(i,j) = lsrain_mean(i,j)                                      &
-         + (lsrain(i, j) + droplet_flux(i, j))*one_over_niters_mp
+    ! Add together ice crystals, snow aggregates and graupel
+    ! for surface snow rate (kg/m2/s)
 
-      ! Add together ice crystals, snow aggregates and graupel
-      ! for surface snow rate (kg/m2/s)
+    lssnow_mean(i, j) = lssnow_mean(i, j)                                    &
+                    + (lssnow(i, j)  + lssnow2(i, j)                         &
+                    + lsgraup(i, j)) * one_over_niters_mp
 
-      lssnow_mean(i, j) = lssnow_mean(i, j)                                    &
-                      + (lssnow(i, j)  + lssnow2(i, j)                         &
-                      + lsgraup(i, j)) * one_over_niters_mp
+    lsgraup_mean(i, j) = lsgraup_mean(i, j)                                  &
+                    + lsgraup(i, j) * one_over_niters_mp
 
-      lsgraup_mean(i, j) = lsgraup_mean(i, j)                                  &
-                      + lsgraup(i, j) * one_over_niters_mp
-    end do ! tdims&i
-
-  end do ! tdims%j
+  end do ! tdims%i
 !$OMP end do NOWAIT
 
   ! Accumulate rain and snow rates for water tracers
   if (l_wtrac) then
     do i_wt = 1, n_wtrac
 !$OMP do SCHEDULE(STATIC)
-      do j = tdims%j_start, tdims%j_end
-        do i = tdims%i_start, tdims%i_end
-          wtrac_as(i_wt)%ls_rain(i,j) = wtrac_as(i_wt)%ls_rain(i,j)            &
-                                       + (wtrac_mp(i_wt)%lsrain(i,j)           &
-                                          + wtrac_mp(i_wt)%droplet_flux(i,j))  &
-                                       * one_over_niters_mp
+      do i = tdims%i_start, tdims%i_end
+        wtrac_as(i_wt)%ls_rain(i,j) = wtrac_as(i_wt)%ls_rain(i,j)            &
+                                      + (wtrac_mp(i_wt)%lsrain(i,j)          &
+                                        + wtrac_mp(i_wt)%droplet_flux(i,j))  &
+                                      * one_over_niters_mp
 
-          ! No qcf2 or graupel for water tracers
-          wtrac_as(i_wt)%ls_snow(i,j) = wtrac_as(i_wt)%ls_snow(i,j)            &
-                            + wtrac_mp(i_wt)%lssnow(i,j) * one_over_niters_mp
-        end do
-      end do
+        ! No qcf2 or graupel for water tracers
+        wtrac_as(i_wt)%ls_snow(i,j) = wtrac_as(i_wt)%ls_snow(i,j)            &
+                          + wtrac_mp(i_wt)%lssnow(i,j) * one_over_niters_mp
+      end do ! tdims%i
 !$OMP end do NOWAIT
-    end do
+    end do ! loop over wt
   end if
 
 !$OMP end PARALLEL
@@ -954,18 +923,14 @@ end do ! Outer substepping loop over it
 ! (No need to do this for water tracers as mean value already stored in
 !  lsrain and lssnow water tracer equivalents)
 !$OMP  PARALLEL do SCHEDULE(STATIC) DEFAULT(none)                              &
-!$OMP  SHARED( tdims, lssnow, lssnow_mean, lsrain, lsrain_mean )               &
-!$OMP  private( i, j )
-do j = tdims%j_start, tdims%j_end
+!$OMP  SHARED( tdims, lssnow, lssnow_mean, lsrain, lsrain_mean)                &
+!$OMP  private( i )
+do i = tdims%i_start, tdims%i_end
 
-  do i = tdims%i_start, tdims%i_end
+  lssnow(i,j) = lssnow_mean(i,j)
+  lsrain(i,j) = lsrain_mean(i,j)
 
-    lssnow(i,j) = lssnow_mean(i,j)
-    lsrain(i,j) = lsrain_mean(i,j)
-
-  end do
-
-end do
+end do ! tdims%i
 !$OMP end PARALLEL do
 
 !If autotuning is active, decide what to do with the
