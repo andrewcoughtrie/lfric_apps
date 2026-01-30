@@ -1,6 +1,6 @@
 # LFRic Apps
 
-[![ci](https://github.com/MetOffice/lfric_apps/actions/workflows/ci.yml/badge.svg)](https://github.com/MetOffice/lfric_apps/actions/workflows/ci.yml)
+[![Docs](https://github.com/MetOffice/lfric_apps/actions/workflows/ci_docs.yml/badge.svg)](https://github.com/MetOffice/lfric_apps/actions/workflows/ci_docs.yml)
 
 This repository is home to the LFRic-based science applications and libraries such as
 lfric_atm and the GungHo dynamical core.
